@@ -1,7 +1,9 @@
 package me.cominixo.betterf3.modules;
 
-import com.mojang.blaze3d.platform.GlUtil;
+import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
@@ -14,7 +16,6 @@ import me.cominixo.betterf3.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextColor;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -94,17 +95,16 @@ public class SystemModule extends BaseModule {
     final long usedMemory = totalMemory - freeMemory;
 
     final Window window = client.getWindow();
+    final GpuDevice gpuDevice = RenderSystem.getDevice();
 
     final String javaVersion = String.format("%s", System.getProperty("java.version"));
     final String memoryUsage = String.format("% 2d%% %03d/%03d MB", usedMemory * 100 / maxMemory, usedMemory / 1024 / 1024, maxMemory / 1024 / 1024);
     final String allocationRate = String.format("% 2d MB/s", this.allocationRate(usedMemory) / 1024 / 1024);
     final String allocatedMemory = String.format("% 2d%% %03dMB", totalMemory * 100 / maxMemory, totalMemory / 1024 / 1024);
-    final String displayInfo = String.format("%d x %d (%s)", window.getWidth(), window.getHeight(), GlUtil.getVendor());
+    final String displayInfo = String.format("%d x %d (%s)", window.getWidth(), window.getHeight(), gpuDevice.getVendor());
 
-    final String[] versionSplit = GlUtil.getOpenGLVersion().split(" ");
-
-    final String openGlVersion = versionSplit[0];
-    final String gpuDriverVersion = String.join(" ", ArrayUtils.remove(versionSplit, 0));
+    final String openGlVersion = gpuDevice.getBackendName();
+    final String gpuDriverVersion = gpuDevice.getVersion();
     final String gpuUtilization = gpuUtilization();
 
     lines.get(0).value(time);
@@ -112,9 +112,9 @@ public class SystemModule extends BaseModule {
     lines.get(2).value(this.memoryColorToggle ? Utils.percentColor((int) (usedMemory * 100 / maxMemory)) + memoryUsage : memoryUsage);
     lines.get(3).value(allocationRate);
     lines.get(4).value(allocatedMemory);
-    lines.get(5).value(GlUtil.getCpuInfo());
+    lines.get(5).value(GLX._getCpuInfo());
     lines.get(6).value(displayInfo);
-    lines.get(7).value(GlUtil.getRenderer());
+    lines.get(7).value(gpuDevice.getRenderer());
     lines.get(8).value(gpuUtilization);
     lines.get(9).value(openGlVersion);
     lines.get(10).value(gpuDriverVersion);
