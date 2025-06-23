@@ -13,18 +13,25 @@ import org.spongepowered.asm.mixin.Shadow;
  * Mixin to access volatile "chunks" field in ClientChunkManager.
  */
 @Mixin(SectionRenderDispatcher.class)
-public class ChunkBuilderMixin implements ChunkBuilderAccess {
-
-  @Shadow private volatile int toBatchCount;
+public abstract class ChunkBuilderMixin implements ChunkBuilderAccess {
 
   @Shadow @Final private Queue<Runnable> toUpload;
 
   @Final
   @Shadow private SectionBufferBuilderPool bufferPool;
 
+  /**
+   * Gets the number of cached chunks.
+   *
+   * @return the number of cached chunks
+   */
+  @SuppressWarnings("checkstyle:MethodName")
+  @Shadow
+  public abstract int getCompileQueueSize();
+
   @Override
   public int betterF3$getQueuedTaskCount() {
-    return this.toBatchCount;
+    return this.getCompileQueueSize();
   }
 
   @Override

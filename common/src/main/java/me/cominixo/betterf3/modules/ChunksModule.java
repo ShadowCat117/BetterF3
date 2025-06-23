@@ -153,7 +153,7 @@ public class ChunksModule extends BaseModule {
     // TODO make this work properly with Canvas (chunkBuilderAccessor is null when using it)
     if (chunkBuilderDuck != null) {
       // Pending chunk uploads
-      lines.get(2).value(client.levelRenderer.getSectionRenderDispatcher().getToBatchCount());
+      lines.get(2).value(client.levelRenderer.getSectionRenderDispatcher().getCompileQueueSize());
 
       lines.get(3).value(client.levelRenderer.getSectionRenderDispatcher().getToUpload());
 

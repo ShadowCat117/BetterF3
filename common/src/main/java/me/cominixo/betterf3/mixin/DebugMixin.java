@@ -50,7 +50,7 @@ public abstract class DebugMixin {
     if (GeneralOptions.disableMod) {
       return;
     }
-    context.pose().pushPose();
+    context.pose().pushMatrix();
   }
 
   /**
@@ -62,7 +62,7 @@ public abstract class DebugMixin {
   @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;pick(DFZ)Lnet/minecraft/world/phys/HitResult;", ordinal = 1, shift = At.Shift.AFTER))
   public void renderFontScaleBefore(final GuiGraphics context, final CallbackInfo ci) {
     if (!GeneralOptions.disableMod) {
-      context.pose().scale((float) GeneralOptions.fontScale, (float) GeneralOptions.fontScale, 1F);
+      context.pose().scale((float) GeneralOptions.fontScale, (float) GeneralOptions.fontScale);
     }
   }
 

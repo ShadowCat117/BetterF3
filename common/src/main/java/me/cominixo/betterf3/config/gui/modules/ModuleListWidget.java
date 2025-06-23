@@ -1,6 +1,5 @@
 package me.cominixo.betterf3.config.gui.modules;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.List;
 import me.cominixo.betterf3.modules.BaseModule;
@@ -10,7 +9,7 @@ import me.cominixo.betterf3.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -169,7 +168,7 @@ public class ModuleListWidget extends ObjectSelectionList<ModuleListWidget.Modul
     public void render(final GuiGraphics context, final int index, final int y, final int x, final int entryWidth, final int entryHeight,
                      final int mouseX, final int mouseY, final boolean hovered, final float tickDelta) {
 
-      context.drawString(this.client.font, this.module.toString(), x + 35, y + 1, 0xffffff, true);
+      context.drawString(this.client.font, this.module.toString(), x + 35, y + 1, 0xffffffff, true);
 
       final Component exampleText;
 
@@ -185,30 +184,26 @@ public class ModuleListWidget extends ObjectSelectionList<ModuleListWidget.Modul
         exampleText = Component.nullToEmpty("");
       }
 
-      context.drawString(this.client.font, exampleText, x + 43, y + 13, 0xffffff, true);
-
-      //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      context.drawString(this.client.font, exampleText, x + 43, y + 13, 0xffffffff, true);
 
       if (this.client.options.touchscreen().get() || hovered) {
-        //RenderSystem.setShaderTexture(0, new Identifier("textures/gui/server_selection.png"));
         context.fill(x, y, x + 32, y + 32, -1601138544);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         final int v = mouseX - x;
         final int w = mouseY - y;
 
         if (index > 0) {
           if (v < 16 && w < 16) {
-            context.blitSprite(RenderType::guiTextured, ResourceLocation.parse("server_list/move_up_highlighted"), x, y, 32, 32);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up_highlighted"), x, y, 32, 32);
           } else {
-            context.blitSprite(RenderType::guiTextured, ResourceLocation.parse("server_list/move_up"), x, y, 32, 32);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up"), x, y, 32, 32);
           }
         }
 
         if (index < ModuleListWidget.this.moduleEntries.size() - 1) {
           if (v < 16 && w > 16) {
-            context.blitSprite(RenderType::guiTextured, ResourceLocation.parse("server_list/move_down_highlighted"), x, y, 32, 32);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down_highlighted"), x, y, 32, 32);
           } else {
-            context.blitSprite(RenderType::guiTextured, ResourceLocation.parse("server_list/move_down"), x, y, 32, 32);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down"), x, y, 32, 32);
           }
         }
       }

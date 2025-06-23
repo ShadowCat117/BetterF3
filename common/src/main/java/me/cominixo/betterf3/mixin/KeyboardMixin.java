@@ -29,8 +29,7 @@ public abstract class KeyboardMixin {
   @Final
   private Minecraft minecraft;
 
-  @Shadow
-  protected abstract void debugFeedbackTranslated(String key, Object... args);
+  @Shadow protected abstract void debugFeedbackComponent(Component arg);
 
   /**
    * Adds the config menu by pressing f3 + m.
@@ -46,10 +45,10 @@ public abstract class KeyboardMixin {
     } else if (key == 70) {
       if (Screen.hasControlDown()) {
         this.minecraft.options.simulationDistance().set(Mth.clamp((this.minecraft.options.simulationDistance().get() + (Screen.hasShiftDown() ? -1 : 1)), 5, 32));
-        this.debugFeedbackTranslated("debug.betterf3.cycle_simulationdistance.message", this.minecraft.options.simulationDistance().get());
+        this.debugFeedbackComponent(Component.translatable("debug.betterf3.cycle_simulationdistance.message", this.minecraft.options.simulationDistance().get()));
       } else {
         this.minecraft.options.renderDistance().set(Mth.clamp((this.minecraft.options.renderDistance().get() + (Screen.hasShiftDown() ? -1 : 1)), 2, 32));
-        this.debugFeedbackTranslated("debug.betterf3.cycle_renderdistance.message", this.minecraft.options.renderDistance().get());
+        this.debugFeedbackComponent(Component.translatable("debug.betterf3.cycle_renderdistance.message", this.minecraft.options.renderDistance().get()));
       }
       cir.setReturnValue(true);
     }
@@ -61,7 +60,7 @@ public abstract class KeyboardMixin {
    * @param key the keyboard key with f3
    * @param cir the callback info
    */
-  @Inject(method = "handleDebugKeys", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessage(Lnet/minecraft/network/chat/Component;)V", shift = At.Shift.AFTER, ordinal = 14))
+  @Inject(method = "handleDebugKeys", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyboardHandler;showDebugChat(Lnet/minecraft/network/chat/Component;)V", shift = At.Shift.AFTER, ordinal = 14))
   public void processF3Messages(final int key, final CallbackInfoReturnable<Boolean> cir) {
     if (key == 81) {
       this.minecraft.gui.getChat().addMessage(Component.literal(""));

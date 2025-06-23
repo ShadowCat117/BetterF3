@@ -103,7 +103,7 @@ public class ModulesScreen extends Screen {
   public void render(final GuiGraphics context, final int mouseX, final int mouseY, final float delta) {
     super.render(context, mouseX, mouseY, delta);
     this.modulesListWidget.render(context, mouseX, mouseY, delta);
-    context.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+    context.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
   }
 
   @Override

@@ -32,7 +32,7 @@ public class MinecraftModule extends BaseModule {
    * @param client the Minecraft client
    */
   public void update(final Minecraft client) {
-    lines.get(0).value(SharedConstants.getCurrentVersion().getName() + " (" + client.getLaunchedVersion() +
+    lines.get(0).value(SharedConstants.getCurrentVersion().name() + " (" + client.getLaunchedVersion() +
       "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(client.getVersionType()) || client.options.reducedDebugInfo().get() ? "" : "/" + client.getVersionType()) + ")");
   }
 }

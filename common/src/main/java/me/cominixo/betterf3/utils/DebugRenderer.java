@@ -1,8 +1,6 @@
 package me.cominixo.betterf3.utils;
 
 import com.google.common.base.Strings;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import me.cominixo.betterf3.config.GeneralOptions;
@@ -12,11 +10,8 @@ import me.cominixo.betterf3.modules.MiscRightModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import static me.cominixo.betterf3.utils.Utils.xPos;
 
@@ -32,21 +27,14 @@ public final class DebugRenderer {
   /**
    * Lets us draw in batches.
    *
-   * @param minecraft      The Minecraft instance
-   * @param font           The font renderer
-   * @param pos            The position
-   * @param list           The list of Text
-   * @param matrixStack    The MatrixStack
-   * @param vertexConsumer The VertexConsumer
-   * @return VertexConsumerProvider
+   * @param minecraft   The Minecraft instance
+   * @param font        The font renderer
+   * @param pos         The position
+   * @param list        The list of Text
+   * @param guiGraphics The Draw Context
    */
-  public static MultiBufferSource.BufferSource immediate(final Minecraft minecraft, final Font font, final PositionEnum pos,
-                                                         final List<Component> list, final PoseStack matrixStack, final VertexConsumer vertexConsumer) {
-
-    final float f = (float) (GeneralOptions.backgroundColor >> 24 & 255) / 255.0F;
-    final float g = (float) (GeneralOptions.backgroundColor >> 16 & 255) / 255.0F;
-    final float h = (float) (GeneralOptions.backgroundColor >> 8 & 255) / 255.0F;
-    final float k = (float) (GeneralOptions.backgroundColor & 255) / 255.0F;
+  public static void drawBackground(final Minecraft minecraft, final Font font, final PositionEnum pos,
+                                    final List<Component> list, final GuiGraphics guiGraphics) {
 
     for (int i = 0; i < list.size(); i++) {
       final int height = 9;
@@ -83,8 +71,6 @@ public final class DebugRenderer {
       y1 = y - 1;
       y2 = y + height - 1;
 
-      final Matrix4f matrix = matrixStack.last().pose();
-
       if (x1 < x2) {
         j = x1;
         x1 = x2;
@@ -97,90 +83,80 @@ public final class DebugRenderer {
         y2 = j;
       }
 
-      vertexConsumer.addVertex(matrix, x1, y2, 0.0F).setColor(g, h, k, f);
-      vertexConsumer.addVertex(matrix, x2, y2, 0.0F).setColor(g, h, k, f);
-      vertexConsumer.addVertex(matrix, x2, y1, 0.0F).setColor(g, h, k, f);
-      vertexConsumer.addVertex(matrix, x1, y1, 0.0F).setColor(g, h, k, f);
+      guiGraphics.fill(x1, y1, x2, y2, GeneralOptions.backgroundColor);
     }
-
-    return Minecraft.getInstance().renderBuffers().bufferSource();
   }
 
   /**
    * Renders the right side text.
    *
-   * @param list       the list of {@link Component}s to draw
-   * @param context    Draw Context
-   * @param minecraft  Minecraft Client
-   * @param font       the Font Renderer
-   * @param additional Additional text to draw
+   * @param list        the list of {@link Component}s to draw
+   * @param guiGraphics Draw Context
+   * @param minecraft   Minecraft Client
+   * @param font        the Font Renderer
+   * @param additional  Additional text to draw
    */
   public static void drawRightText(final List<Component> list,
-                                   final GuiGraphics context, final Minecraft minecraft,
+                                   final GuiGraphics guiGraphics, final Minecraft minecraft,
                                    final Font font, @Nullable final List<String> additional) {
 
     if (additional != null) {
       additional.forEach(text -> list.add(Component.nullToEmpty(text)));
     }
 
-    context.drawSpecial(vertexProvider -> {
+    drawBackground(minecraft, font, PositionEnum.RIGHT, list, guiGraphics);
 
-      final MultiBufferSource.BufferSource immediate = immediate(minecraft, font, PositionEnum.RIGHT, list, context.pose(), vertexProvider.getBuffer(RenderType.guiOverlay()));
+    for (int i = 0; i < list.size(); i++) {
 
-      for (int i = 0; i < list.size(); i++) {
-
-        if (!Strings.isNullOrEmpty(list.get(i).getString())) {
-          final int height = 9;
-          final int width = font.width(list.get(i).getString());
-          int windowWidth = (int) (minecraft.getWindow().getGuiScaledWidth() / GeneralOptions.fontScale) - 2 - width;
-          if (GeneralOptions.enableAnimations) {
-            windowWidth += xPos;
-          }
-          final int y = 2 + height * i;
-
-          font.drawInBatch(list.get(i), windowWidth, y, 0xE0E0E0, GeneralOptions.shadowText, context.pose().last().pose(), immediate, Font.DisplayMode.NORMAL, 0, 15728880);
+      if (!Strings.isNullOrEmpty(list.get(i).getString())) {
+        final int height = 9;
+        final int width = font.width(list.get(i).getString());
+        int windowWidth = (int) (minecraft.getWindow().getGuiScaledWidth() / GeneralOptions.fontScale) - 2 - width;
+        if (GeneralOptions.enableAnimations) {
+          windowWidth += xPos;
         }
-      }
-    });
+        final int y = 2 + height * i;
 
-    context.pose().popPose();
+        guiGraphics.drawString(font, list.get(i), windowWidth, y, 0xFFE0E0E0, GeneralOptions.shadowText);
+      }
+    }
+
+    guiGraphics.pose().popMatrix();
   }
 
   /**
    * Renders the left side text.
    *
-   * @param list       the list of {@link Component}s to draw
-   * @param context    Draw Context
-   * @param minecraft  Minecraft Client
-   * @param font       the Font Renderer
-   * @param additional Additional text to draw
+   * @param list        the list of {@link Component}s to draw
+   * @param guiGraphics Draw Context
+   * @param minecraft   Minecraft Client
+   * @param font        the Font Renderer
+   * @param additional  Additional text to draw
    */
   public static void drawLeftText(final List<Component> list,
-                                  final GuiGraphics context, final Minecraft minecraft,
+                                  final GuiGraphics guiGraphics, final Minecraft minecraft,
                                   final Font font, @Nullable final List<String> additional) {
     if (additional != null) {
       additional.forEach(text -> list.add(Component.nullToEmpty(text)));
     }
 
-    context.drawSpecial(vertexProvider -> {
-      final MultiBufferSource.BufferSource immediate = immediate(minecraft, font, PositionEnum.LEFT, list, context.pose(), vertexProvider.getBuffer(RenderType.guiOverlay()));
+    drawBackground(minecraft, font, PositionEnum.LEFT, list, guiGraphics);
 
-      for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < list.size(); i++) {
 
-        if (!Strings.isNullOrEmpty(list.get(i).getString())) {
+      if (!Strings.isNullOrEmpty(list.get(i).getString())) {
 
-          final int height = 9;
-          final int y = 2 + height * i;
-          int xPosLeft = 2;
+        final int height = 9;
+        final int y = 2 + height * i;
+        int xPosLeft = 2;
 
-          if (GeneralOptions.enableAnimations) {
-            xPosLeft -= xPos;
-          }
-
-          font.drawInBatch(list.get(i), xPosLeft, y, 0xE0E0E0, GeneralOptions.shadowText, context.pose().last().pose(), immediate, Font.DisplayMode.NORMAL, 0, 15728880);
+        if (GeneralOptions.enableAnimations) {
+          xPosLeft -= xPos;
         }
+
+        guiGraphics.drawString(font, list.get(i), xPosLeft, y, 0xFFE0E0E0, GeneralOptions.shadowText);
       }
-    });
+    }
   }
 
   /**

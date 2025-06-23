@@ -2,10 +2,10 @@ package me.cominixo.betterf3.mixin.debugcrosshair;
 
 import me.cominixo.betterf3.config.GeneralOptions;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.components.DebugScreenOverlay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Main debug crosshair removal mixin.
@@ -13,11 +13,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(value = Gui.class, priority = 1100)
 public class DebugCrosshairMixin {
 
-  @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showDebugScreen()Z"))
-  private boolean removeDebugCrosshair(final DebugScreenOverlay instance) {
-    if (!GeneralOptions.disableMod && GeneralOptions.hideDebugCrosshair)
-      return false;
-
-    return instance.showDebugScreen();
+  /**
+   * Removes the debug crosshair if the option is enabled.
+   *
+   * @param cir Callback info returnable
+   */
+  @Inject(method = "shouldRenderDebugCrosshair", at = @At(value = "HEAD"), cancellable = true)
+  public void removeDebugCrosshair(final CallbackInfoReturnable<Boolean> cir) {
+    if (!GeneralOptions.disableMod && GeneralOptions.hideDebugCrosshair) {
+      cir.setReturnValue(false);
+      cir.cancel();
+    }
   }
 }
