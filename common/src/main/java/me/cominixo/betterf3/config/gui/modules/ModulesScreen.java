@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 /**
  * The Modules screen.
  */
-public class ModulesScreen extends Screen {
+public final class ModulesScreen extends Screen {
 
   /**
    * The parent screen.
@@ -146,5 +146,4 @@ public class ModulesScreen extends Screen {
       this.deleteButton.active = false;
     }
   }
-
 }

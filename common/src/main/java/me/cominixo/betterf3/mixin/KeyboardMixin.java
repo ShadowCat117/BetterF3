@@ -72,18 +72,18 @@ public abstract class KeyboardMixin {
   }
 
   @Inject(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;toggleF3Visible()V", opcode = Opcodes.PUTFIELD, ordinal = 0), cancellable = true)
-  private void animationAndAlwaysEnableProfiler(final long l, final int i, final KeyEvent keyEvent, final CallbackInfo ci) {
+  private synchronized void animationAndAlwaysEnableProfiler(final long l, final int i, final KeyEvent keyEvent, final CallbackInfo ci) {
     if (GeneralOptions.disableMod) {
       return;
     }
     if (GeneralOptions.enableAnimations) {
-      if (this.minecraft.getDebugOverlay().showDebugScreen()) {
+      if (this.minecraft.debugEntries.isF3Visible()) {
         closingAnimation = true;
         ci.cancel();
       } else {
         closingAnimation = false;
         xPos = START_X_POS;
-        this.minecraft.debugEntries.toggleF3Visible();
+        this.minecraft.debugEntries.setF3Visible(true);
       }
     } else {
       this.minecraft.debugEntries.toggleF3Visible();

@@ -4,12 +4,14 @@ import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import me.cominixo.betterf3.config.GeneralOptions;
+import me.cominixo.betterf3.config.gui.modules.ModulesScreen;
 import me.cominixo.betterf3.modules.BaseModule;
 import me.cominixo.betterf3.modules.MiscLeftModule;
 import me.cominixo.betterf3.modules.MiscRightModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -173,7 +175,7 @@ public final class DebugRenderer {
 
     final List<Component> list = new ArrayList<>();
 
-    if (minecraft.level == null) {
+    if (minecraft.level == null || (minecraft.screen != null && !(minecraft.screen instanceof ModulesScreen || minecraft.screen instanceof ChatScreen))) {
       return list;
     }
 
@@ -181,12 +183,10 @@ public final class DebugRenderer {
       if (!module.enabled) {
         continue;
       }
-      if (module instanceof MiscRightModule) {
-        ((MiscRightModule) module).update(systemInformation);
-      } else if (module instanceof MiscLeftModule) {
-        ((MiscLeftModule) module).update(gameInformation);
-      } else {
-        module.update(minecraft);
+      switch (module) {
+        case MiscRightModule miscRightModule -> miscRightModule.update(systemInformation);
+        case MiscLeftModule miscLeftModule -> miscLeftModule.update(gameInformation);
+        default -> module.update(minecraft);
       }
 
       list.addAll(module.linesFormatted(minecraft.showOnlyReducedInfo()));

@@ -30,17 +30,17 @@ public abstract class FabricDebugMixin {
   private Font font;
 
   /**
-   * Renders the text on the left side of the screen.
+      * Renders the text on either the left or right side of the screen, depending on the {@code bl} parameter.
    *
    * @param guiGraphics Draw Context
    * @param list        List of strings
-   * @param bl          Left side boolean
+   * @param bl          If {@code true}, renders on the left side; if {@code false}, renders on the right side.
    * @param ci          Callback info
    */
   @Inject(method = "renderLines", at = @At("HEAD"), cancellable = true)
-  public void drawLeftText(final GuiGraphics guiGraphics, final List<String> list, final boolean bl, final CallbackInfo ci) {
+  public void drawText(final GuiGraphics guiGraphics, final List<String> list, final boolean bl, final CallbackInfo ci) {
 
-    if (GeneralOptions.disableMod) {
+    if (GeneralOptions.disableMod || !this.minecraft.debugEntries.isF3Visible()) {
       return;
     }
 
