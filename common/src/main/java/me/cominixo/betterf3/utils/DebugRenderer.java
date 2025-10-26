@@ -173,6 +173,10 @@ public final class DebugRenderer {
 
     final List<Component> list = new ArrayList<>();
 
+    if (minecraft.level == null) {
+      return list;
+    }
+
     for (final BaseModule module : left ? BaseModule.modules : BaseModule.modulesRight) {
       if (!module.enabled) {
         continue;

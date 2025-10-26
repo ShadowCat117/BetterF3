@@ -49,7 +49,7 @@ public class FpsModule extends BaseModule {
    */
   public FpsModule() {
     lines.add(new DebugLine("fps", "format.betterf3.no_format", true));
-    lines.get(0).inReducedDebug = true;
+    lines.getFirst().inReducedDebug = true;
 
     this.colorHigh = this.defaultColorHigh;
     this.colorMed = this.defaultColorMed;
@@ -79,6 +79,6 @@ public class FpsModule extends BaseModule {
       case LOW -> this.colorLow;
     };
 
-    lines.get(0).value(Collections.singletonList(Utils.styledText(fpsString, color)));
+    lines.getFirst().value(Collections.singletonList(Utils.styledText(fpsString, color)));
   }
 }

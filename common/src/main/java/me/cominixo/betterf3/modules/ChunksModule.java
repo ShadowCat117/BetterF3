@@ -113,17 +113,17 @@ public class ChunksModule extends BaseModule {
     final SectionRenderDispatcher chunkBuilder = client.levelRenderer.getSectionRenderDispatcher();
     final ChunkBuilderAccess chunkBuilderDuck = (ChunkBuilderAccess) chunkBuilder;
 
-    if (client.level != null) {
-      final ClientChunkCache clientChunkManager = client.level.getChunkSource();
-      final ClientChunkManagerAccess clientChunkManagerMixin = (ClientChunkManagerAccess) clientChunkManager;
-      final ClientChunkMapAccess clientChunkMapMixin = (ClientChunkMapAccess) (Object) clientChunkManagerMixin.getChunks();
-
-      // Client Chunk Cache
-      lines.get(5).value(clientChunkMapMixin.getChunks().length());
-      // Loaded Chunks
-      lines.get(6).value(clientChunkManager.getLoadedChunksCount());
-
+    if (client.level == null) {
+      return;
     }
+    final ClientChunkCache clientChunkManager = client.level.getChunkSource();
+    final ClientChunkManagerAccess clientChunkManagerMixin = (ClientChunkManagerAccess) clientChunkManager;
+    final ClientChunkMapAccess clientChunkMapMixin = (ClientChunkMapAccess) (Object) clientChunkManagerMixin.getChunks();
+
+    // Client Chunk Cache
+    lines.get(5).value(clientChunkMapMixin.betterF3$getChunks().length());
+    // Loaded Chunks
+    lines.get(6).value(clientChunkManager.getLoadedChunksCount());
 
     final Level world = DataFixUtils.orElse(Optional.ofNullable(client.getSingleplayerServer()).flatMap(integratedServer -> Optional.ofNullable(integratedServer.getLevel(client.level.dimension()))), client.level);
     final LongSet forceLoadedChunks = world instanceof ServerLevel serverLevel ? serverLevel.getForceLoadedChunks() :
@@ -170,6 +170,10 @@ public class ChunksModule extends BaseModule {
     if (info != null) {
       lines.get(9).value(info.getSpawnableChunkCount());
     }
+    if (client.getCameraEntity() == null) {
+      return;
+    }
+
     final BlockPos blockPos = Objects.requireNonNull(client.getCameraEntity()).blockPosition();
     final ChunkPos chunkPos = new ChunkPos(blockPos);
     final String regionFile = "r.%d.%d.mca (%d, %d)".formatted(chunkPos.getRegionX(), chunkPos.getRegionZ(),

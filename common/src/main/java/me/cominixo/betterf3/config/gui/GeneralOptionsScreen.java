@@ -5,6 +5,9 @@ import me.cominixo.betterf3.config.ModConfigFile;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -20,10 +23,11 @@ public final class GeneralOptionsScreen {
   /**
    * Gets the config builder.
    *
-   * @param parent the previous screen
+   * @param minecraft the minecraft instance
    * @return the config builder
    */
-  public static ConfigBuilder configBuilder(final Screen parent) {
+  public static ConfigBuilder configBuilder(final Minecraft minecraft) {
+    final Screen parent = minecraft.screen;
 
     final ConfigBuilder builder = ConfigBuilder.create()
     .setParentScreen(parent)
@@ -89,7 +93,12 @@ public final class GeneralOptionsScreen {
     general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterf3.debug_crosshair"), GeneralOptions.hideDebugCrosshair)
     .setDefaultValue(false)
     .setTooltip(Component.translatable("config.betterf3.debug_crosshair.tooltip"))
-    .setSaveConsumer(newValue -> GeneralOptions.hideDebugCrosshair = newValue)
+    .setSaveConsumer(newValue -> {
+      GeneralOptions.hideDebugCrosshair = newValue;
+      if (minecraft.level != null && !GeneralOptions.disableMod && Boolean.TRUE.equals(newValue)) {
+        minecraft.debugEntries.setStatus(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR, DebugScreenEntryStatus.NEVER);
+      }
+    })
     .build());
 
     general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterf3.sidebar"), GeneralOptions.hideSidebar)
@@ -114,7 +123,7 @@ public final class GeneralOptionsScreen {
     .setDefaultValue(false)
     .setTooltip(Component.translatable("config.betterf3.always_enable_tps_graph.tooltip"))
     .setSaveConsumer(newValue -> {
-      if (newValue && GeneralOptions.alwaysEnablePing) {
+      if (Boolean.TRUE.equals(newValue) && GeneralOptions.alwaysEnablePing) {
         GeneralOptions.alwaysEnablePing = false;
         GeneralOptions.alwaysEnableTPS = true;
       } else {
@@ -127,7 +136,7 @@ public final class GeneralOptionsScreen {
     .setDefaultValue(false)
     .setTooltip(Component.translatable("config.betterf3.always_enable_ping_graph.tooltip"))
     .setSaveConsumer(newValue -> {
-      if (newValue && GeneralOptions.alwaysEnableTPS) {
+      if (Boolean.TRUE.equals(newValue) && GeneralOptions.alwaysEnableTPS) {
         GeneralOptions.alwaysEnableTPS = false;
         GeneralOptions.alwaysEnablePing = true;
       } else {

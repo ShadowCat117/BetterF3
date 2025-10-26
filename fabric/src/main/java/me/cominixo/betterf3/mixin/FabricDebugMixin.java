@@ -1,5 +1,6 @@
 package me.cominixo.betterf3.mixin;
 
+import java.util.Collections;
 import java.util.List;
 import me.cominixo.betterf3.config.GeneralOptions;
 import me.cominixo.betterf3.utils.DebugRenderer;
@@ -21,61 +22,35 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(DebugScreenOverlay.class)
 public abstract class FabricDebugMixin {
 
-  @Shadow @Final private Minecraft minecraft;
-  @Shadow @Final private Font font;
-
-  /**
-   * Gets the information on the left side of the screen.
-   *
-   * @return the game information
-   */
-  @SuppressWarnings("checkstyle:MethodName")
-  @Shadow protected abstract List<String> getGameInformation();
-
-  /**
-   * Gets the information on the right side of the screen.
-   *
-   * @return the system information
-   */
-  @SuppressWarnings("checkstyle:MethodName")
-  @Shadow protected abstract List<String> getSystemInformation();
+  @Shadow
+  @Final
+  private Minecraft minecraft;
+  @Shadow
+  @Final
+  private Font font;
 
   /**
    * Renders the text on the left side of the screen.
    *
-   * @param context Draw Context
-   * @param ci Callback info
+   * @param guiGraphics Draw Context
+   * @param list        List of strings
+   * @param bl          Left side boolean
+   * @param ci          Callback info
    */
-  @Inject(method = "drawGameInformation", at = @At("HEAD"), cancellable = true)
-  public void drawLeftText(final GuiGraphics context, final CallbackInfo ci) {
+  @Inject(method = "renderLines", at = @At("HEAD"), cancellable = true)
+  public void drawLeftText(final GuiGraphics guiGraphics, final List<String> list, final boolean bl, final CallbackInfo ci) {
 
     if (GeneralOptions.disableMod) {
       return;
     }
 
-    final List<Component> list = DebugRenderer.newText(this.minecraft, true, this.getGameInformation(), this.getSystemInformation());
-
-    DebugRenderer.drawLeftText(list, context, this.minecraft, this.font, null);
-
-    ci.cancel();
-  }
-
-  /**
-   * Renders the text on the right side of the screen.
-   *
-   * @param context Draw Context
-   * @param ci Callback info
-   */
-  @Inject(method = "drawSystemInformation", at = @At("HEAD"), cancellable = true)
-  public void drawRightText(final GuiGraphics context, final CallbackInfo ci) {
-
-    if (GeneralOptions.disableMod) {
-      return;
+    if (bl) {
+      final List<Component> leftList = DebugRenderer.newText(this.minecraft, true, Collections.emptyList(), Collections.emptyList());
+      DebugRenderer.drawLeftText(leftList, guiGraphics, this.minecraft, this.font, null);
+    } else {
+      final List<Component> rightList = DebugRenderer.newText(this.minecraft, false, Collections.emptyList(), Collections.emptyList());
+      DebugRenderer.drawRightText(rightList, guiGraphics, this.minecraft, this.font, null);
     }
-
-    final List<Component> list = DebugRenderer.newText(this.minecraft, false, this.getGameInformation(), this.getSystemInformation());
-
-    DebugRenderer.drawRightText(list, context, this.minecraft, this.font, null);
 
     ci.cancel();
   }

@@ -68,7 +68,7 @@ public class EntityModule extends BaseModule {
     final List<Component> entityValues =
     Arrays.asList(Utils.styledText(I18n.get("text.betterf3.line.rendered"), valueColor),
     Utils.styledText(I18n.get("text.betterf3.line.total"), this.totalColor),
-    Utils.styledText(client.levelRenderer.visibleEntityCount, valueColor),
+    Utils.styledText(client.gameRenderer.getLevelRenderState().entityRenderStates.size(), valueColor),
     Utils.styledText(client.levelRenderer.level.getEntityCount(), this.totalColor));
 
     final IntegratedServer integratedServer = client.getSingleplayerServer();

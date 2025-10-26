@@ -4,7 +4,7 @@ import me.cominixo.betterf3.config.GeneralOptions;
 import me.cominixo.betterf3.config.gui.ModConfigScreen;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.objectweb.asm.Opcodes;
@@ -34,20 +34,21 @@ public abstract class KeyboardMixin {
   /**
    * Adds the config menu by pressing f3 + m.
    *
-   * @param key key pressed with f3
+   * @param keyEvent the key event
    * @param cir Callback info
    */
   @Inject(method = "handleDebugKeys", at = @At("HEAD"), cancellable = true)
-  public void processF3(final int key, final CallbackInfoReturnable<Boolean> cir) {
+  public void processF3(final KeyEvent keyEvent, final CallbackInfoReturnable<Boolean> cir) {
+    final int key = keyEvent.key();
     if (key == 77) { // Key m
       this.minecraft.setScreen(new ModConfigScreen(null));
       cir.setReturnValue(true);
     } else if (key == 70) {
-      if (Screen.hasControlDown()) {
-        this.minecraft.options.simulationDistance().set(Mth.clamp((this.minecraft.options.simulationDistance().get() + (Screen.hasShiftDown() ? -1 : 1)), 5, 32));
+      if (keyEvent.hasControlDown()) {
+        this.minecraft.options.simulationDistance().set(Mth.clamp((this.minecraft.options.simulationDistance().get() + (keyEvent.hasShiftDown() ? -1 : 1)), 5, 32));
         this.debugFeedbackComponent(Component.translatable("debug.betterf3.cycle_simulationdistance.message", this.minecraft.options.simulationDistance().get()));
       } else {
-        this.minecraft.options.renderDistance().set(Mth.clamp((this.minecraft.options.renderDistance().get() + (Screen.hasShiftDown() ? -1 : 1)), 2, 32));
+        this.minecraft.options.renderDistance().set(Mth.clamp((this.minecraft.options.renderDistance().get() + (keyEvent.hasShiftDown() ? -1 : 1)), 2, 32));
         this.debugFeedbackComponent(Component.translatable("debug.betterf3.cycle_renderdistance.message", this.minecraft.options.renderDistance().get()));
       }
       cir.setReturnValue(true);
@@ -57,12 +58,12 @@ public abstract class KeyboardMixin {
   /**
    * Adds BetterF3 F3 + Q messages.
    *
-   * @param key the keyboard key with f3
+   * @param keyEvent the keyboard key event
    * @param cir the callback info
    */
   @Inject(method = "handleDebugKeys", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyboardHandler;showDebugChat(Lnet/minecraft/network/chat/Component;)V", shift = At.Shift.AFTER, ordinal = 14))
-  public void processF3Messages(final int key, final CallbackInfoReturnable<Boolean> cir) {
-    if (key == 81) {
+  public void processF3Messages(final KeyEvent keyEvent, final CallbackInfoReturnable<Boolean> cir) {
+    if (keyEvent.key() == 81) {
       this.minecraft.gui.getChat().addMessage(Component.literal(""));
       this.minecraft.gui.getChat().addMessage(Component.translatable("debug.betterf3.cycle_renderdistance.help"));
       this.minecraft.gui.getChat().addMessage(Component.translatable("debug.betterf3.cycle_simulationdistance.help"));
@@ -70,35 +71,32 @@ public abstract class KeyboardMixin {
     }
   }
 
-  @Inject(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;toggleOverlay()V", opcode = Opcodes.PUTFIELD, ordinal = 0), cancellable = true)
-  private void animationAndAlwaysEnableProfiler(final long window, final int key, final int scancode, final int action, final int modifiers, final CallbackInfo ci) {
-    if (!GeneralOptions.disableMod) {
-      if (GeneralOptions.enableAnimations) {
-        if (this.minecraft.getDebugOverlay().showDebugScreen()) {
-          closingAnimation = true;
-          ci.cancel();
-        } else {
-          closingAnimation = false;
-          xPos = START_X_POS;
-          this.minecraft.getDebugOverlay().toggleOverlay();
-        }
+  @Inject(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;toggleF3Visible()V", opcode = Opcodes.PUTFIELD, ordinal = 0), cancellable = true)
+  private void animationAndAlwaysEnableProfiler(final long l, final int i, final KeyEvent keyEvent, final CallbackInfo ci) {
+    if (GeneralOptions.disableMod) {
+      return;
+    }
+    if (GeneralOptions.enableAnimations) {
+      if (this.minecraft.getDebugOverlay().showDebugScreen()) {
+        closingAnimation = true;
+        ci.cancel();
       } else {
-        this.minecraft.getDebugOverlay().toggleOverlay();
-      }
-      if (GeneralOptions.alwaysEnableProfiler) {
-        this.minecraft.getDebugOverlay().renderProfilerChart = this.minecraft.getDebugOverlay().showDebugScreen();
-      }
-      if (GeneralOptions.alwaysEnableTPS) {
-        this.minecraft.getDebugOverlay().renderFpsCharts = this.minecraft.getDebugOverlay().showDebugScreen();
-      }
-      if (GeneralOptions.alwaysEnablePing) {
-        if (this.minecraft.getDebugOverlay().showDebugScreen() && !this.minecraft.getDebugOverlay().renderFpsCharts &&
-                !this.minecraft.getDebugOverlay().showNetworkCharts()) {
-          this.minecraft.getDebugOverlay().toggleNetworkCharts();
-        }
+        closingAnimation = false;
+        xPos = START_X_POS;
+        this.minecraft.debugEntries.toggleF3Visible();
       }
     } else {
-      this.minecraft.getDebugOverlay().toggleOverlay();
+      this.minecraft.debugEntries.toggleF3Visible();
+    }
+    if (GeneralOptions.alwaysEnableProfiler) {
+      this.minecraft.getDebugOverlay().renderProfilerChart = this.minecraft.getDebugOverlay().showDebugScreen();
+    }
+    if (GeneralOptions.alwaysEnableTPS) {
+      this.minecraft.getDebugOverlay().renderFpsCharts = this.minecraft.getDebugOverlay().showDebugScreen();
+    }
+    if (GeneralOptions.alwaysEnablePing && this.minecraft.getDebugOverlay().showDebugScreen() && !this.minecraft.getDebugOverlay().renderFpsCharts &&
+              !this.minecraft.getDebugOverlay().showNetworkCharts()) {
+      this.minecraft.getDebugOverlay().toggleNetworkCharts();
     }
     ci.cancel();
   }

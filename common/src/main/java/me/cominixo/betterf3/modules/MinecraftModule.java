@@ -23,7 +23,7 @@ public class MinecraftModule extends BaseModule {
     this.valueColor = defaultValueColor;
 
     lines.add(new DebugLine("minecraft", "format.betterf3.default_no_colon", false));
-    lines.get(0).inReducedDebug = true;
+    lines.getFirst().inReducedDebug = true;
   }
 
   /**
@@ -32,7 +32,7 @@ public class MinecraftModule extends BaseModule {
    * @param client the Minecraft client
    */
   public void update(final Minecraft client) {
-    lines.get(0).value(SharedConstants.getCurrentVersion().name() + " (" + client.getLaunchedVersion() +
+    lines.getFirst().value(SharedConstants.getCurrentVersion().name() + " (" + client.getLaunchedVersion() +
       "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(client.getVersionType()) || client.options.reducedDebugInfo().get() ? "" : "/" + client.getVersionType()) + ")");
   }
 }

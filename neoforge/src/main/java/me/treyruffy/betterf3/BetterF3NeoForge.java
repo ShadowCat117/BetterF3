@@ -46,7 +46,7 @@ public class BetterF3NeoForge {
   public BetterF3NeoForge(final IEventBus eventBus) {
     LOGGER.info("[BetterF3] Starting...");
 
-    if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+    if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) {
       LOGGER.warn("[BetterF3] Not supported on dedicated server!");
     } else {
       ClientSetup.setup(eventBus);

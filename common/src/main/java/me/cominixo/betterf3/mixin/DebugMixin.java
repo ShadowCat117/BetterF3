@@ -2,13 +2,17 @@ package me.cominixo.betterf3.mixin;
 
 import me.cominixo.betterf3.config.GeneralOptions;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static me.cominixo.betterf3.utils.Utils.START_X_POS;
@@ -22,22 +26,13 @@ import static me.cominixo.betterf3.utils.Utils.xPos;
 @Mixin(DebugScreenOverlay.class)
 public abstract class DebugMixin {
 
+  @Unique
+  private static final Logger betterF3$log = LoggerFactory.getLogger(DebugMixin.class);
   /**
    * Toggles the debug HUD.
    */
-  @Shadow private boolean renderDebug;
-
-  /**
-   * Disables the unneeded math for allocation rate.
-   *
-   * @param instance the allocation rate calculator
-   * @param allocatedBytes the allocated bytes
-   * @return nothing
-   */
-  @Redirect(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay$AllocationRateCalculator;bytesAllocatedPerSecond(J)J"))
-  public long allocationRateCalculatorGet(final DebugScreenOverlay.AllocationRateCalculator instance, final long allocatedBytes) {
-    return 0;
-  }
+  @Final
+  @Shadow private Minecraft minecraft;
 
   /**
    * Ensures that the TPS graph works.
@@ -59,7 +54,7 @@ public abstract class DebugMixin {
    * @param context Draw Context
    * @param ci Callback info
    */
-  @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;pick(DFZ)Lnet/minecraft/world/phys/HitResult;", ordinal = 1, shift = At.Shift.AFTER))
+  @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;getCurrentlyEnabled()Ljava/util/Collection;", shift = At.Shift.AFTER))
   public void renderFontScaleBefore(final GuiGraphics context, final CallbackInfo ci) {
     if (!GeneralOptions.disableMod) {
       context.pose().scale((float) GeneralOptions.fontScale, (float) GeneralOptions.fontScale);
@@ -102,7 +97,7 @@ public abstract class DebugMixin {
         xPos = (int) (xPos * GeneralOptions.animationSpeed);
 
         if (xPos >= 300) {
-          this.renderDebug = false;
+          this.minecraft.debugEntries.setF3Visible(false);
           closingAnimation = false;
         }
 

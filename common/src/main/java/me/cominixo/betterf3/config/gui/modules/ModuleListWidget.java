@@ -9,9 +9,11 @@ import me.cominixo.betterf3.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The Module list widget.
@@ -147,80 +149,17 @@ public class ModuleListWidget extends ObjectSelectionList<ModuleListWidget.Modul
 
     // Fixes 1.17 crash
     @Override
-    public Component getNarration() {
+    public @NotNull Component getNarration() {
       return Component.nullToEmpty(this.module.toString());
     }
 
-    /**
-     * Renders the module list widget.
-     *
-     * @param context the Draw Context
-     * @param index the entry index
-     * @param y the y location
-     * @param x the x location
-     * @param entryWidth the row width
-     * @param entryHeight the row height
-     * @param mouseX the mouse x location
-     * @param mouseY the mouse y location
-     * @param hovered if the mouse is hovering
-     * @param tickDelta the delta
-     */
-    public void render(final GuiGraphics context, final int index, final int y, final int x, final int entryWidth, final int entryHeight,
-                     final int mouseX, final int mouseY, final boolean hovered, final float tickDelta) {
-
-      context.drawString(this.client.font, this.module.toString(), x + 35, y + 1, 0xffffffff, true);
-
-      final Component exampleText;
-
-      if (this.module instanceof CoordsModule coordsModule) {
-        exampleText = Utils.styledText("X", coordsModule.colorX).append(Utils.styledText("Y", coordsModule.colorY)).append(Utils.styledText("Z", coordsModule.colorZ)).append(Utils.styledText(": ", coordsModule.nameColor))
-        .append(Utils.styledText("100 ", coordsModule.colorX).append(Utils.styledText("200 ", coordsModule.colorY)).append(Utils.styledText("300", coordsModule.colorZ)));
-
-      } else if (this.module instanceof FpsModule fpsModule) {
-        exampleText = Utils.styledText("60 fps  ", fpsModule.colorHigh).append(Utils.styledText("40 fps  ", fpsModule.colorMed)).append(Utils.styledText("10 fps", fpsModule.colorLow));
-      } else if (this.module.nameColor != null && this.module.valueColor != null) {
-        exampleText = Utils.styledText("Name: ", this.module.nameColor).append(Utils.styledText("Value", this.module.valueColor));
-      } else {
-        exampleText = Component.nullToEmpty("");
-      }
-
-      context.drawString(this.client.font, exampleText, x + 43, y + 13, 0xffffffff, true);
-
-      if (this.client.options.touchscreen().get() || hovered) {
-        context.fill(x, y, x + 32, y + 32, -1601138544);
-        final int v = mouseX - x;
-        final int w = mouseY - y;
-
-        if (index > 0) {
-          if (v < 16 && w < 16) {
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up_highlighted"), x, y, 32, 32);
-          } else {
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up"), x, y, 32, 32);
-          }
-        }
-
-        if (index < ModuleListWidget.this.moduleEntries.size() - 1) {
-          if (v < 16 && w > 16) {
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down_highlighted"), x, y, 32, 32);
-          } else {
-            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down"), x, y, 32, 32);
-          }
-        }
-      }
-    }
-
-    /**
-     * Gets mouse clicked.
-     *
-     * @param mouseX the mouse x
-     * @param mouseY the mouse y
-     * @param button the button
-     * @return if mouse clicked
-     */
-    public boolean mouseClicked(final double mouseX, final double mouseY, final int button) {
-      final double d = mouseX - (double) this.modulesScreen.modulesListWidget.getRowLeft();
+    @Override
+    public boolean mouseClicked(final MouseButtonEvent mouseButtonEvent, final boolean a) {
+      final double mouseX = mouseButtonEvent.x();
+      final double mouseY = mouseButtonEvent.y();
+      final double d = mouseX - this.modulesScreen.modulesListWidget.getRowLeft();
       final double e =
-      mouseY - (double) ModuleListWidget.this.getRowTop(ModuleListWidget.this.children().indexOf(this));
+      mouseY - ModuleListWidget.this.getRowTop(ModuleListWidget.this.children().indexOf(this));
       if (d <= 32.0D) {
         final int i = this.modulesScreen.modulesListWidget.children().indexOf(this);
         if (d < 16.0D && e < 16.0D && i > 0) {
@@ -250,6 +189,51 @@ public class ModuleListWidget extends ObjectSelectionList<ModuleListWidget.Modul
       this.modulesScreen.modulesListWidget.updateModules();
 
     }
-  }
 
+    @Override
+    public void renderContent(final @NotNull GuiGraphics context, final int mouseX, final int mouseY, final boolean hovered, final float tickDelta) {
+      final int x = this.getContentX();
+      final int y = this.getContentY();
+      context.drawString(this.client.font, this.module.toString(), x + 35, y + 1, 0xffffffff, true);
+
+      final Component exampleText;
+
+      if (this.module instanceof CoordsModule coordsModule) {
+        exampleText = Utils.styledText("X", coordsModule.colorX).append(Utils.styledText("Y", coordsModule.colorY)).append(Utils.styledText("Z", coordsModule.colorZ)).append(Utils.styledText(": ", coordsModule.nameColor))
+        .append(Utils.styledText("100 ", coordsModule.colorX).append(Utils.styledText("200 ", coordsModule.colorY)).append(Utils.styledText("300", coordsModule.colorZ)));
+
+      } else if (this.module instanceof FpsModule fpsModule) {
+        exampleText = Utils.styledText("60 fps  ", fpsModule.colorHigh).append(Utils.styledText("40 fps  ", fpsModule.colorMed)).append(Utils.styledText("10 fps", fpsModule.colorLow));
+      } else if (this.module.nameColor != null && this.module.valueColor != null) {
+        exampleText = Utils.styledText("Name: ", this.module.nameColor).append(Utils.styledText("Value", this.module.valueColor));
+      } else {
+        exampleText = Component.nullToEmpty("");
+      }
+
+      context.drawString(this.client.font, exampleText, x + 43, y + 13, 0xffffffff, true);
+
+      if (this.client.options.touchscreen().get() || hovered) {
+        context.fill(x, y, x + 32, y + 32, -1601138544);
+        final int v = mouseX - x;
+        final int w = mouseY - y;
+        final int index = ModuleListWidget.this.children().indexOf(this);
+
+        if (index > 0) {
+          if (v < 16 && w < 16) {
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up_highlighted"), x, y, 32, 32);
+          } else {
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_up"), x, y, 32, 32);
+          }
+        }
+
+        if (index < ModuleListWidget.this.moduleEntries.size() - 1) {
+          if (v < 16 && w > 16) {
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down_highlighted"), x, y, 32, 32);
+          } else {
+            context.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("server_list/move_down"), x, y, 32, 32);
+          }
+        }
+      }
+    }
+  }
 }

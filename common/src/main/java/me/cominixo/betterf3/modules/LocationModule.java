@@ -6,7 +6,7 @@ import me.cominixo.betterf3.utils.DebugLine;
 import me.cominixo.betterf3.utils.Utils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.DebugScreenOverlay;
+import net.minecraft.client.gui.components.debug.DebugEntryHeightmap;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -79,119 +79,111 @@ public class LocationModule extends BaseModule {
     final StringBuilder highestBlockServer = new StringBuilder();
 
     final Level serverWorld;
-    if (client.level != null) {
-      assert cameraEntity != null;
-      final BlockPos blockPos = cameraEntity.blockPosition();
-      final ChunkPos chunkPos = new ChunkPos(blockPos);
+    if (client.level == null || cameraEntity == null) {
+      return;
+    }
+    final BlockPos blockPos = cameraEntity.blockPosition();
+    final ChunkPos chunkPos = new ChunkPos(blockPos);
 
-      // Biome
-      lines.get(7).value(client.level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(client.level.getBiome(blockPos).value()));
+    // Biome
+    lines.get(7).value(client.level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(client.level.getBiome(blockPos).value()));
 
-      serverWorld = integratedServer != null ? integratedServer.getLevel(client.level.dimension()) : client.level;
-      final LevelChunk clientChunk = client.level.getChunk(chunkPos.x, chunkPos.z);
-      if (clientChunk.isEmpty()) {
-        chunkLightString = I18n.get("text.betterf3.line.waiting_chunk");
-      } else if (serverWorld != null) {
+    serverWorld = integratedServer != null ? integratedServer.getLevel(client.level.dimension()) : client.level;
+    final LevelChunk clientChunk = client.level.getChunk(chunkPos.x, chunkPos.z);
+    if (clientChunk.isEmpty()) {
+      chunkLightString = I18n.get("text.betterf3.line.waiting_chunk");
+    } else if (serverWorld != null) {
 
-        // Client Chunk Lights
-        final int totalLight = client.level.getChunkSource().getLightEngine().getRawBrightness(blockPos, 0);
-        final int skyLight = client.level.getBrightness(LightLayer.SKY, blockPos);
-        final int blockLight = client.level.getBrightness(LightLayer.BLOCK, blockPos);
-        chunkLightString = I18n.get("format.betterf3.chunklight", totalLight, skyLight, blockLight);
+      // Client Chunk Lights
+      final int totalLight = client.level.getChunkSource().getLightEngine().getRawBrightness(blockPos, 0);
+      final int skyLight = client.level.getBrightness(LightLayer.SKY, blockPos);
+      final int blockLight = client.level.getBrightness(LightLayer.BLOCK, blockPos);
+      chunkLightString = I18n.get("format.betterf3.chunklight", totalLight, skyLight, blockLight);
 
-        // Server Chunk Lights
-        final LevelLightEngine lightingProvider = serverWorld.getChunkSource().getLightEngine();
+      // Server Chunk Lights
+      final LevelLightEngine lightingProvider = serverWorld.getChunkSource().getLightEngine();
 
-        final int skyLightServer = lightingProvider.getLayerListener(LightLayer.SKY).getLightValue(blockPos);
-        final int blockLightServer = lightingProvider.getLayerListener(LightLayer.BLOCK).getLightValue(blockPos);
+      final int skyLightServer = lightingProvider.getLayerListener(LightLayer.SKY).getLightValue(blockPos);
+      final int blockLightServer = lightingProvider.getLayerListener(LightLayer.BLOCK).getLightValue(blockPos);
 
-        chunkLightServerString = I18n.get("format.betterf3.chunklight_server", skyLightServer, blockLightServer);
+      chunkLightServerString = I18n.get("format.betterf3.chunklight_server", skyLightServer, blockLightServer);
 
-        // Heightmap stuff (Find the highest block)
-        final Heightmap.Types[] heightmapTypes = Heightmap.Types.values();
+      // Heightmap stuff (Find the highest block)
+      final Heightmap.Types[] heightmapTypes = Heightmap.Types.values();
 
-        LevelChunk serverChunk;
+      LevelChunk serverChunk;
 
-        if (serverWorld instanceof ServerLevel serverLevel) {
-          if (this.chunkFuture == null) {
-            this.chunkFuture =
-            serverLevel.getChunkSource().getChunkFuture(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-            .thenApply(chunkResult -> (LevelChunk) chunkResult.orElse(null));
-          }
-
-          if (this.chunkFuture == null) {
-            this.chunkFuture = CompletableFuture.completedFuture(clientChunk);
-          }
-
-          serverChunk = this.chunkFuture.getNow(null);
-        } else {
-          serverChunk = clientChunk;
+      if (serverWorld instanceof ServerLevel serverLevel) {
+        if (this.chunkFuture == null) {
+          this.chunkFuture =
+          serverLevel.getChunkSource().getChunkFuture(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
+          .thenApply(chunkResult -> (LevelChunk) chunkResult.orElse(null));
         }
 
-        for (final Heightmap.Types type : heightmapTypes) {
+        serverChunk = this.chunkFuture.getNow(null);
+      } else {
+        serverChunk = clientChunk;
+      }
 
-          // Client
-          if (type.sendToClient()) {
-            final String typeString = DebugScreenOverlay.HEIGHTMAP_NAMES.get(type);
-            final int blockY = clientChunk.getHeight(type, blockPos.getX(), blockPos.getZ());
-            if (blockY > -1) {
-              highestBlock.append("  ").append(typeString).append(": ").append(blockY);
-            }
-          }
+      for (final Heightmap.Types type : heightmapTypes) {
 
-          // Server
-          if (type.keepAfterWorldgen() && serverWorld instanceof ServerLevel) {
-            if (serverChunk == null) {
-              serverChunk = clientChunk;
-            }
-
-            final String typeString = DebugScreenOverlay.HEIGHTMAP_NAMES.get(type);
-
-            final int blockY = serverChunk.getHeight(type, blockPos.getX(), blockPos.getZ());
-            if (blockY > -1) {
-              highestBlockServer.append("  ").append(typeString).append(": ").append(blockY);
-            }
+        // Client
+        if (type.sendToClient()) {
+          final String typeString = DebugEntryHeightmap.HEIGHTMAP_NAMES.get(type);
+          final int blockY = clientChunk.getHeight(type, blockPos.getX(), blockPos.getZ());
+          if (blockY > -1) {
+            highestBlock.append("  ").append(typeString).append(": ").append(blockY);
           }
         }
 
-        // Local Difficulty
-        if (blockPos.getY() >= 0 && blockPos.getY() < 256) {
-          final float moonSize;
-          final long inhabitedTime;
+        // Server
+        if (type.keepAfterWorldgen() && serverWorld instanceof ServerLevel) {
+          if (serverChunk == null) {
+            serverChunk = clientChunk;
+          }
 
-          moonSize = serverWorld.getMoonBrightness();
+          final String typeString = DebugEntryHeightmap.HEIGHTMAP_NAMES.get(type);
 
-          inhabitedTime = Objects.requireNonNullElse(serverChunk, clientChunk).getInhabitedTime();
-
-          final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
-          localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
+          final int blockY = serverChunk.getHeight(type, blockPos.getX(), blockPos.getZ());
+          if (blockY > -1) {
+            highestBlockServer.append("  ").append(typeString).append(": ").append(blockY);
+          }
         }
+      }
 
-        if (integratedServer != null) {
-          final RandomSource slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x, chunkPos.z, ((WorldGenLevel) serverWorld).getSeed(), 0x3ad8025fL);
-          slimeChunkString = String.format("%s", I18n.get((slimeChunk.nextInt(10) == 0) ? "text.betterf3.line.slime_chunk.true" : "text.betterf3.line.slime_chunk.false"));
-        } else {
-          slimeChunkString = String.format("%s", I18n.get("text.betterf3.line.slime_chunk.unknown"));
-        }
+      // Local Difficulty
+      if (blockPos.getY() >= 0 && blockPos.getY() < 256) {
+        final float moonSize;
+        final long inhabitedTime;
+
+        moonSize = serverWorld.getMoonBrightness();
+
+        inhabitedTime = Objects.requireNonNullElse(serverChunk, clientChunk).getInhabitedTime();
+
+        final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
+        localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
+      }
+
+      if (integratedServer != null) {
+        final RandomSource slimeChunk = WorldgenRandom.seedSlimeChunk(chunkPos.x, chunkPos.z, ((WorldGenLevel) serverWorld).getSeed(), 0x3ad8025fL);
+        slimeChunkString = String.format("%s", I18n.get((slimeChunk.nextInt(10) == 0) ? "text.betterf3.line.slime_chunk.true" : "text.betterf3.line.slime_chunk.false"));
+      } else {
+        slimeChunkString = String.format("%s", I18n.get("text.betterf3.line.slime_chunk.unknown"));
       }
     }
 
     // Dimension
-    if (client.level != null) {
-      lines.get(0).value(client.level.dimension().location());
-    }
+    lines.getFirst().value(client.level.dimension().location());
 
-    if (cameraEntity != null) {
-      final Direction facing = cameraEntity.getDirection();
+    final Direction facing = cameraEntity.getDirection();
 
-      final String facingString = Utils.facingString(facing);
-      // Facing
-      lines.get(1).value(String.format("%s (%s)", I18n.get("text.betterf3.line." + facing.toString().toLowerCase()), facingString));
-      // Rotation
-      final String yaw = String.format("%.1f", Mth.wrapDegrees(cameraEntity.getYRot()));
-      final String pitch = String.format("%.1f", Mth.wrapDegrees(cameraEntity.getXRot()));
-      lines.get(2).value(I18n.get("format.betterf3.rotation", yaw, pitch));
-    }
+    final String facingString = Utils.facingString(facing);
+    // Facing
+    lines.get(1).value(String.format("%s (%s)", I18n.get("text.betterf3.line." + facing.toString().toLowerCase()), facingString));
+    // Rotation
+    final String yaw = String.format("%.1f", Mth.wrapDegrees(cameraEntity.getYRot()));
+    final String pitch = String.format("%.1f", Mth.wrapDegrees(cameraEntity.getXRot()));
+    lines.get(2).value(I18n.get("format.betterf3.rotation", yaw, pitch));
 
     // Client Light
     lines.get(3).value(chunkLightString);
@@ -204,12 +196,10 @@ public class LocationModule extends BaseModule {
 
     // Local Difficulty
     lines.get(8).value(localDifficultyString);
-    if (client.level != null) {
-      // Ticks in the day
-      lines.get(9).value(client.level.getDayTime() % 24000L);
-      // Days played
-      lines.get(10).value(client.level.getDayTime() / 24000L);
-    }
+    // Ticks in the day
+    lines.get(9).value(client.level.getDayTime() % 24000L);
+    // Days played
+    lines.get(10).value(client.level.getDayTime() / 24000L);
 
     // Slime chunk
     lines.get(11).value(slimeChunkString.trim());

@@ -71,7 +71,7 @@ public class ServerModule extends BaseModule {
     final List<MutableComponent> serverStringList = new LinkedList<>(Arrays.asList(Utils.styledText(serverString, nameColor), Utils.styledText(tickString, nameColor)));
 
     if (tickString.isEmpty()) {
-      lines.get(0).format("format.betterf3.no_format");
+      lines.getFirst().format("format.betterf3.no_format");
       serverStringList.remove(1);
     }
 

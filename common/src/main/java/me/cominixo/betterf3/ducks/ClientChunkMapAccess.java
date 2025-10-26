@@ -14,6 +14,6 @@ public interface ClientChunkMapAccess {
    *
    * @return Gets Chunks
    */
-  AtomicReferenceArray<LevelChunk> getChunks();
+  AtomicReferenceArray<LevelChunk> betterF3$getChunks();
 
 }

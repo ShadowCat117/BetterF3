@@ -39,7 +39,7 @@ public class ModConfigScreen extends Screen {
     this.addRenderableWidget(rightButton);
 
     final Button configButton = Button.builder(Component.translatable("config.betterf3.general_settings"),
-        button -> client.setScreen(GeneralOptionsScreen.configBuilder(client.screen).build()))
+        button -> client.setScreen(GeneralOptionsScreen.configBuilder(client).build()))
       .bounds(this.width / 2 - 130, this.height / 4 - 24, 260, 20).build();
     this.addRenderableWidget(configButton);
 
@@ -49,7 +49,7 @@ public class ModConfigScreen extends Screen {
     this.addRenderableWidget(doneButton);
 
     if (minecraft != null && minecraft.level != null && !minecraft.getDebugOverlay().showDebugScreen()) {
-      minecraft.getDebugOverlay().toggleOverlay();
+      minecraft.debugEntries.toggleF3Visible();
     }
   }
 

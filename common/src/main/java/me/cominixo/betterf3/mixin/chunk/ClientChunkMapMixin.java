@@ -18,7 +18,7 @@ public class ClientChunkMapMixin implements ClientChunkMapAccess {
   @Shadow AtomicReferenceArray<LevelChunk> chunks;
 
   @Override
-  public AtomicReferenceArray<LevelChunk> getChunks() {
+  public AtomicReferenceArray<LevelChunk> betterF3$getChunks() {
     return this.chunks;
   }
 }

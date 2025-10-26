@@ -109,7 +109,7 @@ public class SystemModule extends BaseModule {
 
     lines.get(0).value(time);
     lines.get(1).value(javaVersion);
-    lines.get(2).value(this.memoryColorToggle ? Utils.percentColor((int) (usedMemory * 100 / maxMemory)) + memoryUsage : memoryUsage);
+    lines.get(2).value(Boolean.TRUE.equals(this.memoryColorToggle) ? Utils.percentColor((int) (usedMemory * 100 / maxMemory)) + memoryUsage : memoryUsage);
     lines.get(3).value(allocationRate);
     lines.get(4).value(allocatedMemory);
     lines.get(5).value(GLX._getCpuInfo());
@@ -133,7 +133,7 @@ public class SystemModule extends BaseModule {
       if (this.lastCalculated != 0L && collectionCount == this.collectionCount) {
         final double d = (double) TimeUnit.SECONDS.toMillis(1L) / (double) (lastCalculated - this.lastCalculated);
         final long n = allocatedBytes - this.allocatedBytes;
-        this.allocationRate = Math.round((double) n * d);
+        this.allocationRate = Math.round(n * d);
       }
 
       this.lastCalculated = lastCalculated;

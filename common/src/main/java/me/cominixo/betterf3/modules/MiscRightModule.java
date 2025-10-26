@@ -47,11 +47,13 @@ public class MiscRightModule extends BaseModule {
   /**
    * Updates the lines.
    *
-   * @param lines the lines
+   * @param immutableLines the lines
    */
-  public void update(final List<String> lines) {
+  public void update(final List<String> immutableLines) {
 
-    lines.add(0, this.version);
+    final List<String> lines = new ArrayList<>(immutableLines);
+
+    lines.addFirst(this.version);
 
     // boolean indicating if we're on the "targeted" section, we have no other way of knowing when it starts/ends.
     boolean inTargeted = false;
@@ -89,6 +91,6 @@ public class MiscRightModule extends BaseModule {
         }
       }
     }
-    ((DebugLineList) this.lines.get(0)).values(lines);
+    ((DebugLineList) this.lines.getFirst()).values(lines);
   }
 }

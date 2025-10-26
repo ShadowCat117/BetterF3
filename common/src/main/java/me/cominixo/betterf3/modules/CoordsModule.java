@@ -81,49 +81,50 @@ public class CoordsModule extends BaseModule {
     Utils.styledText("X", this.colorX).append(Utils.styledText("Y", this.colorY)).append(Utils.styledText("Z",
     this.colorZ));
 
-    if (cameraEntity != null) {
-      final String cameraX = String.format("%.3f", cameraEntity.getX());
-      final String cameraY = String.format("%.5f", cameraEntity.getY());
-      final String cameraZ = String.format("%.3f", cameraEntity.getZ());
+    if (cameraEntity == null) {
+      return;
+    }
+    final String cameraX = String.format("%.3f", cameraEntity.getX());
+    final String cameraY = String.format("%.5f", cameraEntity.getY());
+    final String cameraZ = String.format("%.3f", cameraEntity.getZ());
 
-      // Player coords
-      lines.get(0).value(Arrays.asList(xyz, Utils.styledText(cameraX, this.colorX),
-      Utils.styledText(cameraY, this.colorY), Utils.styledText(cameraZ, this.colorZ)));
+    // Player coords
+    lines.get(0).value(Arrays.asList(xyz, Utils.styledText(cameraX, this.colorX),
+    Utils.styledText(cameraY, this.colorY), Utils.styledText(cameraZ, this.colorZ)));
 
-      final BlockPos blockPos = cameraEntity.blockPosition();
-      // Block coords
-      lines.get(1).value(Arrays.asList(Utils.styledText(blockPos.getX(), this.colorX),
-      Utils.styledText(blockPos.getY(), this.colorY), Utils.styledText(blockPos.getZ(), this.colorZ)));
-      // Chunk Relative coords
-      lines.get(2).value(Arrays.asList(Utils.styledText(blockPos.getX() & 15, this.colorX),
-      Utils.styledText(blockPos.getY() & 15, this.colorY), Utils.styledText(blockPos.getZ() & 15, this.colorZ)));
-      // Chunk coords
-      lines.get(3).value(Arrays.asList(Utils.styledText(blockPos.getX() >> 4, this.colorX),
-      Utils.styledText(blockPos.getY() >> 4, this.colorY), Utils.styledText(blockPos.getZ() >> 4, this.colorZ)));
-      // Player velocity
-      final Entity vehicle = cameraEntity.getRootVehicle();
-      final int ticksPerSecond = 20;
-      if (client.level != null) {
-        final Vec3 currentPos = new Vec3(vehicle.getX(), vehicle.getY(), vehicle.getZ());
-        final long ticksSincePositionChange = client.level.getGameTime() - this.positionUpdateTime;
-        if (!this.prevPos.equals(currentPos)) {
-          this.velocity = this.prevPos.subtract(currentPos);
-          this.positionUpdateTime = client.level.getGameTime();
-        } else if (ticksSincePositionChange > 1) {
-          this.velocity = Vec3.ZERO;
-        }
-        this.prevPos = currentPos;
-      } else {
+    final BlockPos blockPos = cameraEntity.blockPosition();
+    // Block coords
+    lines.get(1).value(Arrays.asList(Utils.styledText(blockPos.getX(), this.colorX),
+    Utils.styledText(blockPos.getY(), this.colorY), Utils.styledText(blockPos.getZ(), this.colorZ)));
+    // Chunk Relative coords
+    lines.get(2).value(Arrays.asList(Utils.styledText(blockPos.getX() & 15, this.colorX),
+    Utils.styledText(blockPos.getY() & 15, this.colorY), Utils.styledText(blockPos.getZ() & 15, this.colorZ)));
+    // Chunk coords
+    lines.get(3).value(Arrays.asList(Utils.styledText(blockPos.getX() >> 4, this.colorX),
+    Utils.styledText(blockPos.getY() >> 4, this.colorY), Utils.styledText(blockPos.getZ() >> 4, this.colorZ)));
+    // Player velocity
+    final Entity vehicle = cameraEntity.getRootVehicle();
+    final int ticksPerSecond = 20;
+    if (client.level != null) {
+      final Vec3 currentPos = new Vec3(vehicle.getX(), vehicle.getY(), vehicle.getZ());
+      final long ticksSincePositionChange = client.level.getGameTime() - this.positionUpdateTime;
+      if (!this.prevPos.equals(currentPos)) {
+        this.velocity = this.prevPos.subtract(currentPos);
+        this.positionUpdateTime = client.level.getGameTime();
+      } else if (ticksSincePositionChange > 1) {
         this.velocity = Vec3.ZERO;
       }
-      final String vX = String.format("%.3f", this.velocity.x() * ticksPerSecond);
-      final String vY = String.format("%.3f", this.velocity.y() * ticksPerSecond);
-      final String vZ = String.format("%.3f", this.velocity.z() * ticksPerSecond);
-      lines.get(4).value(Arrays.asList(Utils.styledText(vX, this.colorX),
-      Utils.styledText(vY, this.colorY), Utils.styledText(vZ, this.colorZ)));
-      lines.get(5).value(Utils.styledText(String.format("%.3f", this.velocity.length() * ticksPerSecond), this.defaultNameColor));
-      final Vec3 horizontalVelocity = new Vec3(this.velocity.x(), 0, this.velocity.z());
-      lines.get(6).value(Utils.styledText(String.format("%.3f", horizontalVelocity.length() * ticksPerSecond), this.defaultNameColor));
+      this.prevPos = currentPos;
+    } else {
+      this.velocity = Vec3.ZERO;
     }
+    final String vX = String.format("%.3f", this.velocity.x() * ticksPerSecond);
+    final String vY = String.format("%.3f", this.velocity.y() * ticksPerSecond);
+    final String vZ = String.format("%.3f", this.velocity.z() * ticksPerSecond);
+    lines.get(4).value(Arrays.asList(Utils.styledText(vX, this.colorX),
+    Utils.styledText(vY, this.colorY), Utils.styledText(vZ, this.colorZ)));
+    lines.get(5).value(Utils.styledText(String.format("%.3f", this.velocity.length() * ticksPerSecond), this.defaultNameColor));
+    final Vec3 horizontalVelocity = new Vec3(this.velocity.x(), 0, this.velocity.z());
+    lines.get(6).value(Utils.styledText(String.format("%.3f", horizontalVelocity.length() * ticksPerSecond), this.defaultNameColor));
   }
 }

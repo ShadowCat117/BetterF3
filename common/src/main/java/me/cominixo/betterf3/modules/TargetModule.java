@@ -63,7 +63,9 @@ public class TargetModule extends BaseModule {
 
     if (blockHit.getType() == HitResult.Type.BLOCK) {
       blockPos = ((BlockHitResult) blockHit).getBlockPos();
-      assert client.level != null;
+      if (client.level == null) {
+        return;
+      }
       final BlockState blockState = client.level.getBlockState(blockPos);
 
       lines.get(0).value(blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ());
@@ -87,7 +89,9 @@ public class TargetModule extends BaseModule {
 
     if (fluidHit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
       blockPos = ((BlockHitResult) fluidHit).getBlockPos();
-      assert client.level != null;
+      if (client.level == null) {
+        return;
+      }
       final FluidState fluidState = client.level.getFluidState(blockPos);
 
       lines.get(5).value(blockPos.getX() + ", " + blockPos.getY() + ", " + blockPos.getZ());

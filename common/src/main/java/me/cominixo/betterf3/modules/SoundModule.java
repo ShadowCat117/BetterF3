@@ -65,9 +65,9 @@ public class SoundModule extends BaseModule {
     Utils.styledText(streamingHandlerList[1], this.maximumColor)));
 
     // Mood
-    assert client.player != null;
-    lines.get(2).value(Math.round(client.player.getCurrentMood() * 100.0F) + "%");
-
+    if (client.player != null) {
+      lines.get(2).value(Math.round(client.player.getCurrentMood() * 100.0F) + "%");
+    }
   }
 
 }

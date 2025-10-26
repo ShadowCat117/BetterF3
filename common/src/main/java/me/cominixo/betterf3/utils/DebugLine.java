@@ -99,7 +99,7 @@ public class DebugLine {
       // format properly if value is a List (bad)
       final List<Object> values = new ArrayList<>();
 
-      if (!name.equals("")) {
+      if (!name.isEmpty()) {
         values.add(Utils.styledText(name, nameColor));
       }
       values.addAll(listValue);

@@ -49,7 +49,7 @@ public class MiscLeftModule extends BaseModule {
   public void update(final List<String> lines) {
 
     // Parse lines to find non-vanilla lines, it's a mess
-    if (lines.size() != this.leftSideSize) {
+    if (!lines.isEmpty() && lines.size() != this.leftSideSize) {
 
       // copy of list for .remove()
       final List<String> listCopy = new ArrayList<>(lines);
@@ -63,13 +63,8 @@ public class MiscLeftModule extends BaseModule {
 
           for (final String vanilla : VANILLA_DEBUG_LEFT) {
 
-            if (s.startsWith(vanilla)) {
+            if (s.startsWith(vanilla) || (stringSplit.length > 1 && stringSplit[1].equals("fps"))) {
               lines.remove(s);
-            } else if (stringSplit.length > 1) {
-
-              if (stringSplit[1].equals("fps")) {
-                lines.remove(s);
-              }
             }
             if (s.contains("tx") && s.contains("rx")) {
               // Have to do this to check if it is a vanilla server info line.
@@ -80,6 +75,6 @@ public class MiscLeftModule extends BaseModule {
       }
       this.leftSideSize = lines.size();
     }
-    ((DebugLineList) this.lines.get(0)).values(lines);
+    ((DebugLineList) this.lines.getFirst()).values(lines);
   }
 }

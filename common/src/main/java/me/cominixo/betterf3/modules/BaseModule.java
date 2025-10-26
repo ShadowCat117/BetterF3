@@ -60,7 +60,7 @@ public abstract class BaseModule implements Comparable<BaseModule> {
   /**
    * The modules both left and right.
    */
-  public final static List<BaseModule> allModules = new ArrayList<>();
+  public static final List<BaseModule> allModules = new ArrayList<>();
 
   /**
    * Module id.
