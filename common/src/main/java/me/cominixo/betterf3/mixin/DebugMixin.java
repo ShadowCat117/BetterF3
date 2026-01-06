@@ -3,14 +3,14 @@ package me.cominixo.betterf3.mixin;
 import java.util.Collection;
 import java.util.List;
 import me.cominixo.betterf3.config.GeneralOptions;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,10 +38,10 @@ public abstract class DebugMixin {
   @Shadow private Minecraft minecraft;
 
   @Unique
-  private static final ResourceLocation BETTERF3_RESOURCE = DebugScreenEntries.register("betterf3", new DebugEntryNoop());
+  private static final Identifier BETTERF3_RESOURCE = DebugScreenEntries.register("betterf3", new DebugEntryNoop());
 
   @Unique
-  private static final List<ResourceLocation> BETTERF3_LIST = List.of(BETTERF3_RESOURCE);
+  private static final List<Identifier> BETTERF3_LIST = List.of(BETTERF3_RESOURCE);
 
   /**
    * Ensures that the TPS graph works.
@@ -51,26 +51,26 @@ public abstract class DebugMixin {
    */
   @Inject(method = "render", at = @At(value = "HEAD"))
   public void renderBefore(final GuiGraphics context, final CallbackInfo ci) {
-    if (GeneralOptions.disableMod || !this.minecraft.debugEntries.isF3Visible()) {
+    if (GeneralOptions.disableMod || !this.minecraft.debugEntries.isOverlayVisible()) {
       return;
     }
     context.pose().pushMatrix();
   }
 
   @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;getCurrentlyEnabled()Ljava/util/Collection;"))
-  private Collection<ResourceLocation> currentlyEnabled(final DebugScreenEntryList instance) {
-    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isF3Visible()) {
+  private Collection<Identifier> currentlyEnabled(final DebugScreenEntryList instance) {
+    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isOverlayVisible()) {
       return BETTERF3_LIST;
     }
     return instance.getCurrentlyEnabled();
   }
 
-  @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;isF3Visible()Z"))
+  @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;isOverlayVisible()Z"))
   private boolean isF3Visible(final DebugScreenEntryList instance) {
-    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isF3Visible()) {
+    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isOverlayVisible()) {
       return false;
     }
-    return instance.isF3Visible();
+    return instance.isOverlayVisible();
   }
 
   /**
@@ -81,7 +81,7 @@ public abstract class DebugMixin {
    */
   @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;getCurrentlyEnabled()Ljava/util/Collection;", shift = At.Shift.AFTER))
   public void renderFontScaleBefore(final GuiGraphics context, final CallbackInfo ci) {
-    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isF3Visible()) {
+    if (!GeneralOptions.disableMod && this.minecraft.debugEntries.isOverlayVisible()) {
       context.pose().scale((float) GeneralOptions.fontScale, (float) GeneralOptions.fontScale);
     }
   }
@@ -122,7 +122,7 @@ public abstract class DebugMixin {
         xPos = (int) (xPos * GeneralOptions.animationSpeed);
 
         if (xPos >= 300) {
-          this.minecraft.debugEntries.setF3Visible(false);
+          this.minecraft.debugEntries.setOverlayVisible(false);
           closingAnimation = false;
         }
 

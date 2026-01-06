@@ -1,6 +1,5 @@
 package me.cominixo.betterf3.modules;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import me.cominixo.betterf3.utils.DebugLine;
 import me.cominixo.betterf3.utils.Utils;
@@ -148,20 +147,17 @@ public class LocationModule extends BaseModule {
           if (blockY > -1) {
             highestBlockServer.append("  ").append(typeString).append(": ").append(blockY);
           }
+
+          if (serverWorld instanceof ServerLevel serverLevel && serverLevel.isInsideBuildHeight(blockPos.getY())) {
+            final float moonSize = serverLevel.getMoonBrightness(blockPos);
+            final long inhabitedTime;
+
+            inhabitedTime = serverChunk.getInhabitedTime();
+
+            final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
+            localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
+          }
         }
-      }
-
-      // Local Difficulty
-      if (blockPos.getY() >= 0 && blockPos.getY() < 256) {
-        final float moonSize;
-        final long inhabitedTime;
-
-        moonSize = serverWorld.getMoonBrightness();
-
-        inhabitedTime = Objects.requireNonNullElse(serverChunk, clientChunk).getInhabitedTime();
-
-        final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
-        localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
       }
 
       if (integratedServer != null) {
@@ -173,7 +169,7 @@ public class LocationModule extends BaseModule {
     }
 
     // Dimension
-    lines.getFirst().value(client.level.dimension().location());
+    lines.getFirst().value(client.level.dimension().identifier());
 
     final Direction facing = cameraEntity.getDirection();
 
