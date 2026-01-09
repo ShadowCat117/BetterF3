@@ -1,5 +1,6 @@
 package me.cominixo.betterf3.modules;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import me.cominixo.betterf3.utils.DebugLine;
 import me.cominixo.betterf3.utils.Utils;
@@ -16,13 +17,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -147,17 +151,21 @@ public class LocationModule extends BaseModule {
           if (blockY > -1) {
             highestBlockServer.append("  ").append(typeString).append(": ").append(blockY);
           }
-
-          if (serverWorld instanceof ServerLevel serverLevel && serverLevel.isInsideBuildHeight(blockPos.getY())) {
-            final float moonSize = serverLevel.getMoonBrightness(blockPos);
-            final long inhabitedTime;
-
-            inhabitedTime = serverChunk.getInhabitedTime();
-
-            final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
-            localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
-          }
         }
+      }
+
+      // Local Difficulty
+      if (serverWorld.isInsideBuildHeight(blockPos.getY())) {
+        final float moonSize;
+        final long inhabitedTime;
+
+        final MoonPhase moonPhase = serverWorld.environmentAttributes().getDimensionValue(EnvironmentAttributes.MOON_PHASE);
+        moonSize = DimensionType.MOON_BRIGHTNESS_PER_PHASE[moonPhase.index()];
+
+        inhabitedTime = Objects.requireNonNullElse(serverChunk, clientChunk).getInhabitedTime();
+
+        final DifficultyInstance localDifficulty = new DifficultyInstance(serverWorld.getDifficulty(), serverWorld.getDayTime(), inhabitedTime, moonSize);
+        localDifficultyString = String.format("%.2f  " + I18n.get("text.betterf3.line.clamped") + ": %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier());
       }
 
       if (integratedServer != null) {
