@@ -1,23 +1,32 @@
 repositories {
-    maven { url "https://maven.shedaniel.me/" } // cloth-config repository
+    maven { url = "https://maven.shedaniel.me/" }
     mavenCentral()
 }
 
 configurations {
-    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+    shadowCommon
 }
 
 dependencies {
-    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-    // Do NOT use other classes from fabric loader
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    compileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    testCompileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
-    modImplementation "me.shedaniel.cloth:cloth-config:${project.cloth_version}", {
+    compileOnly "me.shedaniel.cloth:cloth-config:${project.cloth_version}", {
         exclude module: 'fabric-api'
     }
 
     implementation 'com.electronwill.night-config:json:3.6.6'
     shadowCommon 'com.electronwill.night-config:json:3.6.6'
+
+    testImplementation platform("org.junit:junit-bom:5.11.4")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.withType(Test).tap {
+    configureEach {
+        useJUnitPlatform()
+    }
 }
 
 processResources {
@@ -33,11 +42,9 @@ architectury {
 }
 
 publishing {
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-            }
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
     }
 }

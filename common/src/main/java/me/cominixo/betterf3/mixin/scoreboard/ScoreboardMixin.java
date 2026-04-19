@@ -14,19 +14,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Mixin to cancel sidebar rendering during F3.
  */
 @Mixin(Gui.class)
+@SuppressWarnings("NullAway.Init")
 public class ScoreboardMixin {
 
-  @Shadow @Final private Minecraft minecraft;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
 
-  /**
-   * Cancels sidebar rendering if the {@link GeneralOptions#hideSidebar} setting is true.
-   *
-   * @param info Callback info
-   */
-  @Inject(at = @At("HEAD"), method = "displayScoreboardSidebar", cancellable = true)
-  public void init(final CallbackInfo info) {
-    if (!GeneralOptions.disableMod && GeneralOptions.hideSidebar && this.minecraft.debugEntries.isOverlayVisible()) {
-      info.cancel();
+    /**
+     * Cancels sidebar rendering if the {@link GeneralOptions#hideSidebar} setting is true.
+     *
+     * @param info Callback info
+     */
+    @Inject(at = @At("HEAD"), method = "displayScoreboardSidebar", cancellable = true)
+    public void init(final CallbackInfo info) {
+        if (!GeneralOptions.disableMod
+                && GeneralOptions.hideSidebar
+                && this.minecraft.debugEntries.isOverlayVisible()) {
+            info.cancel();
+        }
     }
-  }
 }

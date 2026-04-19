@@ -21,7 +21,6 @@ import me.cominixo.betterf3.utils.PositionEnum;
 import me.cominixo.betterf3.utils.Utils;
 import net.minecraft.client.resources.language.I18n;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -35,66 +34,68 @@ import org.apache.logging.log4j.Logger;
 @Mod("betterf3")
 public class BetterF3NeoForge {
 
-  // Directly references a log4j logger.
-  private static final Logger LOGGER = LogManager.getLogger();
+    // Directly references a log4j logger.
+    private static final Logger LOGGER = LogManager.getLogger();
 
-  /**
-   * Instantiates a new Better F3 mod for NeoForge.
-   *
-   * @param eventBus the event bus
-   */
-  public BetterF3NeoForge(final IEventBus eventBus) {
-    LOGGER.info("[BetterF3] Starting...");
+    /**
+     * Instantiates a new Better F3 mod for NeoForge.
+     */
+    public BetterF3NeoForge() {
+        LOGGER.info("[BetterF3] Starting...");
 
-    if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) {
-      LOGGER.warn("[BetterF3] Not supported on dedicated server!");
-    } else {
-      ClientSetup.setup(eventBus);
-    }
-  }
-
-  private static final class ClientSetup {
-    private static void setup(final IEventBus eventBus) {
-      setupModules();
-
-      // Sets up Cloth Config if it is installed
-      if (ModList.get().isLoaded("cloth_config"))
-        NeoForgeModMenu.registerModsPage();
-      else LOGGER.info(I18n.get("config.betterf3.need_cloth_config"));
+        if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) {
+            LOGGER.warn("[BetterF3] Not supported on dedicated server!");
+        } else {
+            ClientSetup.setup();
+        }
     }
 
-    private static void setupModules() {
-      LOGGER.info("[BetterF3] Loading...");
+    private static final class ClientSetup {
+        private static void setup() {
+            setupModules();
 
-      Utils.modVersion(modVersion());
+            // Sets up Cloth Config if it is installed
+            if (ModList.get().isLoaded("cloth_config")) NeoForgeModMenu.registerModsPage();
+            else LOGGER.info(I18n.get("config.betterf3.need_cloth_config"));
+        }
 
-      // Initializes all modules and add spaces (default order)
-      new MinecraftModule().init();
-      new FpsModule().init();
-      new GraphicsModule().init();
-      new ServerModule().init();
-      new CoordsModule().init();
-      new ChunksModule().init();
-      new LocationModule().init();
-      new EntityModule().init();
-      new SoundModule().init();
-      new HelpModule().init();
-      BaseModule.modules.add(new EmptyModule(false));
-      new MiscLeftModule().init();
+        private static void setupModules() {
+            LOGGER.info("[BetterF3] Loading...");
 
-      new SystemModule().init(PositionEnum.RIGHT);
-      new MiscRightModule().init(PositionEnum.RIGHT);
-      BaseModule.modulesRight.add(new EmptyModule(false));
-      new TargetModule().init(PositionEnum.RIGHT);
+            Utils.modVersion(modVersion());
 
-      // Setup config with TOML file type
-      ModConfigFile.load(ModConfigFile.FileType.TOML);
+            // Initializes all modules and add spaces (default order)
+            new MinecraftModule().init();
+            new FpsModule().init();
+            new GraphicsModule().init();
+            new ServerModule().init();
+            new CoordsModule().init();
+            new ChunksModule().init();
+            new LocationModule().init();
+            new EntityModule().init();
+            new SoundModule().init();
+            new HelpModule().init();
+            BaseModule.modules.add(new EmptyModule(false));
+            new MiscLeftModule().init();
 
-      LOGGER.info("[BetterF3] All done!");
+            new SystemModule().init(PositionEnum.RIGHT);
+            new MiscRightModule().init(PositionEnum.RIGHT);
+            BaseModule.modulesRight.add(new EmptyModule(false));
+            new TargetModule().init(PositionEnum.RIGHT);
+
+            // Setup config with TOML file type
+            ModConfigFile.load(ModConfigFile.FileType.TOML);
+
+            LOGGER.info("[BetterF3] All done!");
+        }
+
+        private static String modVersion() {
+            return ModList.get()
+                    .getModContainerById("betterf3")
+                    .orElseThrow(NullPointerException::new)
+                    .getModInfo()
+                    .getVersion()
+                    .toString();
+        }
     }
-
-    private static String modVersion() {
-      return ModList.get().getModContainerById("betterf3").orElseThrow(NullPointerException::new).getModInfo().getVersion().toString();
-    }
-  }
 }

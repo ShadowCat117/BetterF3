@@ -1,5 +1,6 @@
 package me.cominixo.betterf3.modules;
 
+import com.electronwill.nightconfig.core.Config;
 import java.util.Arrays;
 import me.cominixo.betterf3.utils.DebugLine;
 import me.cominixo.betterf3.utils.Utils;
@@ -13,61 +14,82 @@ import net.minecraft.network.chat.TextColor;
  */
 public class SoundModule extends BaseModule {
 
-  /**
-   * Total color.
-   */
-  public TextColor maximumColor;
+    /**
+     * Total color.
+     */
+    public TextColor maximumColor;
 
-  /**
-   * Default total color.
-   */
-  public final TextColor defaultMaximumColor = TextColor.fromLegacyFormat(ChatFormatting.DARK_AQUA);
+    /**
+     * Default total color.
+     */
+    public final TextColor defaultMaximumColor = legacyColor(ChatFormatting.DARK_AQUA);
 
-  /**
-   * Instantiates a new Sound module.
-   */
-  public SoundModule() {
-    this.defaultNameColor = TextColor.fromLegacyFormat(ChatFormatting.GOLD);
-    this.defaultValueColor = TextColor.fromLegacyFormat(ChatFormatting.AQUA);
+    /**
+     * Instantiates a new Sound module.
+     */
+    public SoundModule() {
+        this.defaultNameColor = legacyColor(ChatFormatting.GOLD);
+        this.defaultValueColor = legacyColor(ChatFormatting.AQUA);
 
-    this.nameColor = defaultNameColor;
-    this.valueColor = defaultValueColor;
-    this.maximumColor = this.defaultMaximumColor;
+        this.nameColor = defaultNameColor;
+        this.valueColor = defaultValueColor;
+        this.maximumColor = this.defaultMaximumColor;
 
-    lines.add(new DebugLine("sounds", "format.betterf3.total", true));
-    lines.add(new DebugLine("ambient_sounds", "format.betterf3.total", true));
-    lines.add(new DebugLine("mood"));
-  }
-
-  /**
-   * Updates the Sound module.
-   *
-   * @param client the Minecraft client
-   */
-  public void update(final Minecraft client) {
-
-    final String debugString = client.getSoundManager().getDebugString();
-    final String[] staticHandlerList =
-    debugString.substring(8).substring(0, debugString.indexOf(" ")).replace(" +", "").split("/");
-    final String[] streamingHandlerList = debugString.substring(debugString.indexOf("+") + 1).replace(" ", "").split("/");
-
-    final String playing = I18n.get("text.betterf3.line.playing");
-    final String maximum = I18n.get("text.betterf3.line.maximum");
-
-    // Sound
-    lines.get(0).value(Arrays.asList(Utils.styledText(playing, valueColor), Utils.styledText(maximum,
-    this.maximumColor), Utils.styledText(staticHandlerList[0], valueColor),
-    Utils.styledText(staticHandlerList[1], this.maximumColor)));
-
-    // Ambient Sound
-    lines.get(1).value(Arrays.asList(Utils.styledText(playing, valueColor), Utils.styledText(maximum,
-    this.maximumColor), Utils.styledText(streamingHandlerList[0], valueColor),
-    Utils.styledText(streamingHandlerList[1], this.maximumColor)));
-
-    // Mood
-    if (client.player != null) {
-      lines.get(2).value(Math.round(client.player.getCurrentMood() * 100.0F) + "%");
+        lines.add(new DebugLine("sounds", "format.betterf3.total", true));
+        lines.add(new DebugLine("ambient_sounds", "format.betterf3.total", true));
+        lines.add(new DebugLine("mood"));
     }
-  }
 
+    /**
+     * Updates the Sound module.
+     *
+     * @param client the Minecraft client
+     */
+    public void update(final Minecraft client) {
+
+        final String debugString = client.getSoundManager().getChannelDebugString();
+        final String[] staticHandlerList = debugString
+                .substring(8)
+                .substring(0, debugString.indexOf(" "))
+                .replace(" +", "")
+                .split("/");
+        final String[] streamingHandlerList = debugString
+                .substring(debugString.indexOf("+") + 1)
+                .replace(" ", "")
+                .split("/");
+
+        final String playing = I18n.get("text.betterf3.line.playing");
+        final String maximum = I18n.get("text.betterf3.line.maximum");
+
+        // Sound
+        lines.get(0)
+                .value(Arrays.asList(
+                        Utils.styledText(playing, valueColor),
+                        Utils.styledText(maximum, this.maximumColor),
+                        Utils.styledText(staticHandlerList[0], valueColor),
+                        Utils.styledText(staticHandlerList[1], this.maximumColor)));
+
+        // Ambient Sound
+        lines.get(1)
+                .value(Arrays.asList(
+                        Utils.styledText(playing, valueColor),
+                        Utils.styledText(maximum, this.maximumColor),
+                        Utils.styledText(streamingHandlerList[0], valueColor),
+                        Utils.styledText(streamingHandlerList[1], this.maximumColor)));
+
+        // Mood
+        if (client.player != null) {
+            lines.get(2).value(Math.round(client.player.getCurrentMood() * 100.0F) + "%");
+        }
+    }
+
+    @Override
+    protected void loadModuleConfig(final Config moduleConfig) {
+        this.maximumColor = readColor(moduleConfig, "maximum_color", this.defaultMaximumColor);
+    }
+
+    @Override
+    protected void saveModuleConfig(final Config moduleConfig) {
+        writeColor(moduleConfig, "maximum_color", this.maximumColor);
+    }
 }

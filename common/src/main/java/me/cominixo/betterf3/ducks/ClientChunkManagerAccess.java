@@ -13,5 +13,5 @@ public interface ClientChunkManagerAccess {
      *
      * @return The storage.
      */
-    ClientChunkCache.Storage getChunks();
+    ClientChunkCache.Storage betterF3$getChunks();
 }

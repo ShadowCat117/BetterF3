@@ -9,11 +9,10 @@ import net.minecraft.world.level.chunk.LevelChunk;
 @SuppressWarnings("checkstyle:MethodName")
 public interface ClientChunkMapAccess {
 
-  /**
-   * Gets the chunk array.
-   *
-   * @return Gets Chunks
-   */
-  AtomicReferenceArray<LevelChunk> betterF3$getChunks();
-
+    /**
+     * Gets the chunk array.
+     *
+     * @return Gets Chunks
+     */
+    AtomicReferenceArray<LevelChunk> betterF3$getChunks();
 }

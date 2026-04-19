@@ -9,15 +9,15 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
  */
 public final class NeoForgeModMenu {
 
-  private NeoForgeModMenu() {
-    // Do nothing
-  }
+    private NeoForgeModMenu() {
+        // Do nothing
+    }
 
-  /**
-   * Registers BetterF3 in the mod menu.
-   */
-  public static void registerModsPage() {
-    ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
-    () -> (client, parent) -> new ModConfigScreen(parent));
-  }
+    /**
+     * Registers BetterF3 in the mod menu.
+     */
+    public static void registerModsPage() {
+        ModLoadingContext.get()
+                .registerExtensionPoint(IConfigScreenFactory.class, () -> (_, parent) -> new ModConfigScreen(parent));
+    }
 }

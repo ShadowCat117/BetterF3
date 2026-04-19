@@ -12,13 +12,15 @@ import org.spongepowered.asm.mixin.Shadow;
  * Mixin to access volatile "chunks" field in ClientChunkManager.
  */
 @Mixin(ClientChunkCache.Storage.class)
+@SuppressWarnings("NullAway.Init")
 public class ClientChunkMapMixin implements ClientChunkMapAccess {
 
-  @Final
-  @Shadow AtomicReferenceArray<LevelChunk> chunks;
+    @Final
+    @Shadow
+    private AtomicReferenceArray<LevelChunk> chunks;
 
-  @Override
-  public AtomicReferenceArray<LevelChunk> betterF3$getChunks() {
-    return this.chunks;
-  }
+    @Override
+    public AtomicReferenceArray<LevelChunk> betterF3$getChunks() {
+        return this.chunks;
+    }
 }

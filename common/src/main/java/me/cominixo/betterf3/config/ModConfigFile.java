@@ -9,494 +9,208 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import me.cominixo.betterf3.modules.BaseModule;
-import me.cominixo.betterf3.modules.ChunksModule;
-import me.cominixo.betterf3.modules.CoordsModule;
 import me.cominixo.betterf3.modules.EmptyModule;
-import me.cominixo.betterf3.modules.EntityModule;
-import me.cominixo.betterf3.modules.FpsModule;
-import me.cominixo.betterf3.modules.HelpModule;
-import me.cominixo.betterf3.modules.SoundModule;
-import me.cominixo.betterf3.modules.SystemModule;
-import me.cominixo.betterf3.utils.DebugLine;
-import net.minecraft.network.chat.TextColor;
 
 /**
  * The Mod config file.
  */
 public final class ModConfigFile {
 
-  private ModConfigFile() {
-    // Do nothing
-  }
-
-  private static FileType storedFileType;
-
-  /**
-   * Saves the config.
-   */
-  public final static Runnable saveRunnable = () -> {
-    final Path path = Paths.get(storedFileType == FileType.JSON ? "config/betterf3.json" : "config/betterf3.toml");
-
-    final File file = path.toFile();
-    if (!file.exists()) file.getParentFile().mkdirs();
-
-    final FileConfig config = FileConfig.builder(path).concurrent().autosave().build();
-
-    final Config general = Config.inMemory();
-    general.set("disable_mod", GeneralOptions.disableMod);
-    general.set("auto_start", GeneralOptions.autoF3);
-    general.set("space_modules", GeneralOptions.spaceEveryModule);
-    general.set("shadow_text", GeneralOptions.shadowText);
-    general.set("animations", GeneralOptions.enableAnimations);
-    general.set("animationSpeed", GeneralOptions.animationSpeed);
-    general.set("fontScale", GeneralOptions.fontScale);
-    general.set("background_color", GeneralOptions.backgroundColor);
-    general.set("hide_debug_crosshair", GeneralOptions.hideDebugCrosshair);
-    general.set("hide_sidebar", GeneralOptions.hideSidebar);
-    general.set("hide_bossbar", GeneralOptions.hideBossbar);
-    general.set("always_show_profiler", GeneralOptions.alwaysEnableProfiler);
-    general.set("always_show_tps", GeneralOptions.alwaysEnableTPS);
-    general.set("always_show_ping", GeneralOptions.alwaysEnablePing);
-
-    final List<Config> configsLeft = new ArrayList<>();
-
-    for (final BaseModule module : BaseModule.modules) {
-
-      final Config moduleConfig = saveModule(module);
-
-      configsLeft.add(moduleConfig);
-
+    private ModConfigFile() {
+        // Do nothing
     }
 
-    final List<Config> configsRight = new ArrayList<>();
+    private static FileType storedFileType = FileType.JSON;
 
-    for (final BaseModule module : BaseModule.modulesRight) {
+    /**
+     * Saves the config.
+     */
+    public static final Runnable saveRunnable = () -> {
+        final Path path = Paths.get(storedFileType == FileType.JSON ? "config/betterf3.json" : "config/betterf3.toml");
 
-      final Config moduleConfig = saveModule(module);
+        final File file = path.toFile();
+        if (!file.exists() && !file.getParentFile().mkdirs()) return;
 
-      configsRight.add(moduleConfig);
+        try (final FileConfig config =
+                FileConfig.builder(path).concurrent().autosave().build()) {
+            final Config general = Config.inMemory();
+            general.set("disable_mod", GeneralOptions.disableMod);
+            general.set("auto_start", GeneralOptions.autoF3);
+            general.set("space_modules", GeneralOptions.spaceEveryModule);
+            general.set("shadow_text", GeneralOptions.shadowText);
+            general.set("animations", GeneralOptions.enableAnimations);
+            general.set("animationSpeed", GeneralOptions.animationSpeed);
+            general.set("fontScale", GeneralOptions.fontScale);
+            general.set("background_color", GeneralOptions.backgroundColor);
+            general.set("hide_debug_crosshair", GeneralOptions.hideDebugCrosshair);
+            general.set("hide_sidebar", GeneralOptions.hideSidebar);
+            general.set("hide_bossbar", GeneralOptions.hideBossbar);
+            general.set("always_show_profiler", GeneralOptions.alwaysEnableProfiler);
+            general.set("always_show_tps", GeneralOptions.alwaysEnableTPS);
+            general.set("always_show_ping", GeneralOptions.alwaysEnablePing);
+            general.set("performance_optimizations", GeneralOptions.enablePerformanceOptimizations);
 
-    }
-
-    config.set("modules_left", configsLeft);
-    config.set("modules_right", configsRight);
-
-    config.set("general", general);
-
-    config.close();
-  };
-
-  /**
-   * Loads the config.
-   *
-   * @param filetype the filetype (JSON or TOML)
-   */
-  public static void load(final FileType filetype) {
-
-    storedFileType = filetype;
-
-    final File file = new File(storedFileType == FileType.JSON ? "config/betterf3.json" : "config/betterf3.toml");
-
-    if (!file.exists()) {
-      return;
-    }
-
-    final FileConfig config = FileConfig.builder(file).concurrent().autosave().build();
-
-    config.load();
-
-    final Config allModulesConfig = config.getOrElse("modules", () -> null);
-
-    // Support for old configs
-    if (allModulesConfig != null) {
-
-      for (final BaseModule module : BaseModule.allModules) {
-
-        final String moduleName = module.id;
-
-        final Config moduleConfig = allModulesConfig.getOrElse(moduleName, () -> null);
-
-        if (moduleConfig == null) {
-          continue;
-        }
-
-        final Config lines = moduleConfig.getOrElse("lines", () -> null);
-
-        if (lines != null) {
-          for (final Config.Entry e : lines.entrySet()) {
-            final DebugLine line = module.line(e.getKey());
-
-            if (line != null) {
-              line.enabled = e.getValue();
+            final List<Config> configsLeft = new ArrayList<>();
+            for (final BaseModule module : BaseModule.modules) {
+                configsLeft.add(saveModule(module));
             }
 
-          }
+            final List<Config> configsRight = new ArrayList<>();
+            for (final BaseModule module : BaseModule.modulesRight) {
+                configsRight.add(saveModule(module));
+            }
+
+            config.set("modules_left", configsLeft);
+            config.set("modules_right", configsRight);
+            config.set("general", general);
         }
+        BaseModule.markAllDirty();
+    };
 
-        if (module.defaultNameColor != null) {
-          module.nameColor = TextColor.fromRgb(moduleConfig.getOrElse("name_color",
-          module.defaultNameColor.getValue()));
-        }
-        if (module.defaultValueColor != null) {
-          module.valueColor = TextColor.fromRgb(moduleConfig.getOrElse("value_color",
-          module.defaultValueColor.getValue()));
-        }
-
-        if (module instanceof CoordsModule coordsModule) {
-
-          if (coordsModule.defaultColorX != null)
-            coordsModule.colorX = TextColor.fromRgb(moduleConfig.getOrElse("color_x",
-            coordsModule.defaultColorX.getValue()));
-          if (coordsModule.defaultColorY != null)
-            coordsModule.colorY = TextColor.fromRgb(moduleConfig.getOrElse("color_y",
-            coordsModule.defaultColorY.getValue()));
-          if (coordsModule.defaultColorZ != null)
-            coordsModule.colorZ = TextColor.fromRgb(moduleConfig.getOrElse("color_z",
-            coordsModule.defaultColorZ.getValue()));
-        }
-
-        if (module instanceof SoundModule soundModule) {
-          if (soundModule.defaultMaximumColor != null)
-            soundModule.maximumColor = TextColor.fromRgb(moduleConfig.getOrElse("maximum_color",
-            soundModule.defaultMaximumColor.getValue()));
-        }
-
-        if (module instanceof EntityModule entityModule) {
-          if (entityModule.defaultTotalColor != null)
-            entityModule.totalColor = TextColor.fromRgb(moduleConfig.getOrElse("total_entities_color",
-            entityModule.defaultTotalColor.getValue()));
-        }
-
-        if (module instanceof HelpModule helpModule) {
-          if (helpModule.defaultEnabledColor != null)
-            helpModule.enabledColor = TextColor.fromRgb(moduleConfig.getOrElse("enabled_color",
-            helpModule.defaultEnabledColor.getValue()));
-          if (helpModule.defaultDisabledColor != null)
-            helpModule.disabledColor = TextColor.fromRgb(moduleConfig.getOrElse("disabled_color",
-            helpModule.defaultDisabledColor.getValue()));
-        }
-
-        if (module instanceof ChunksModule chunkModule) {
-          if (chunkModule.defaultEnabledColor != null)
-            chunkModule.enabledColor = TextColor.fromRgb(moduleConfig.getOrElse("chunks_enabled_color",
-            chunkModule.defaultEnabledColor.getValue()));
-          if (chunkModule.defaultDisabledColor != null)
-            chunkModule.disabledColor = TextColor.fromRgb(moduleConfig.getOrElse("chunks_disabled_color",
-            chunkModule.defaultDisabledColor.getValue()));
-          if (chunkModule.defaultTotalColor != null)
-            chunkModule.totalColor = TextColor.fromRgb(moduleConfig.getOrElse("total_chunks_color",
-            chunkModule.defaultTotalColor.getValue()));
-        }
-
-        if (module instanceof SystemModule systemModule) {
-          if (systemModule.memoryColorToggle == null) {
-            systemModule.memoryColorToggle = moduleConfig.getOrElse("memory_color_toggle", systemModule.defaultMemoryColorToggle);
-          }
-          if (systemModule.timeFormat == null) {
-            systemModule.timeFormat = moduleConfig.getOrElse("time_format", systemModule.defaultTimeFormat);
-          }
-        }
-
-        module.enabled = moduleConfig.getOrElse("enabled", true);
-
-      }
-    } else {
-      // New config
-      final List<BaseModule> modulesLeft = new ArrayList<>();
-      final List<BaseModule> modulesRight = new ArrayList<>();
-
-      final List<Config> modulesLeftConfig = config.getOrElse("modules_left", () -> null);
-
-      if (modulesLeftConfig != null) {
-
-        for (final Config moduleConfig : modulesLeftConfig) {
-          final String moduleName = moduleConfig.getOrElse("name", null);
-
-          if (moduleName == null) {
-            continue;
-          }
-
-          final BaseModule baseModule = ModConfigFile.loadModule(moduleConfig);
-
-          modulesLeft.add(baseModule);
-        }
-      }
-
-      final List<Config> modulesRightConfig = config.getOrElse("modules_right", () -> null);
-
-      if (modulesRightConfig != null) {
-        for (final Config moduleConfig : modulesRightConfig) {
-
-          final String moduleName = moduleConfig.getOrElse("name", () -> null);
-
-          if (moduleName == null) {
-            continue;
-          }
-
-          final BaseModule baseModule = ModConfigFile.loadModule(moduleConfig);
-
-          modulesRight.add(baseModule);
-        }
-      }
-
-      if (!modulesLeft.isEmpty() || !modulesRight.isEmpty()) {
-        BaseModule.modules = modulesLeft;
-        BaseModule.modulesRight = modulesRight;
-      }
-
-    }
-
-    final Config general = config.getOrElse("general", () -> null);
-
-    if (general != null) {
-
-      if (allModulesConfig != null) {
-        final List<BaseModule> modulesLeft = new ArrayList<>();
-        final List<BaseModule> modulesRight = new ArrayList<>();
-
-        for (final Object s : general.getOrElse("modules_left_order", new ArrayList<>())) {
-          final BaseModule baseModule = BaseModule.moduleById(s.toString());
-          if (baseModule != null) {
-            modulesLeft.add(baseModule);
-          }
-        }
-
-        if (!modulesLeft.isEmpty()) {
-          BaseModule.modules = modulesLeft;
-        }
-
-        for (final Object s : general.getOrElse("modules_right_order", new ArrayList<>())) {
-          final BaseModule baseModule = BaseModule.moduleById(s.toString());
-          if (baseModule != null) {
-            modulesRight.add(baseModule);
-          }
-        }
-
-        if (!modulesRight.isEmpty()) {
-          BaseModule.modulesRight = modulesRight;
-        }
-      }
-
-      GeneralOptions.disableMod = general.getOrElse("disable_mod", false);
-      GeneralOptions.autoF3 = general.getOrElse("auto_start", false);
-      GeneralOptions.spaceEveryModule = general.getOrElse("space_modules", false);
-      GeneralOptions.shadowText = general.getOrElse("shadow_text", true);
-      GeneralOptions.enableAnimations = general.getOrElse("animations", true);
-      GeneralOptions.animationSpeed = general.getOrElse("animationSpeed", 1.0);
-      GeneralOptions.fontScale = general.getOrElse("fontScale", 1.0);
-      GeneralOptions.backgroundColor = general.getOrElse("background_color", 0x6F505050);
-      GeneralOptions.hideDebugCrosshair = general.getOrElse("hide_debug_crosshair", false);
-      GeneralOptions.hideSidebar = general.getOrElse("hide_sidebar", true);
-      GeneralOptions.hideBossbar = general.getOrElse("hide_bossbar", true);
-      GeneralOptions.alwaysEnableProfiler = general.getOrElse("always_show_profiler", false);
-      GeneralOptions.alwaysEnableTPS = general.getOrElse("always_show_tps", false);
-      GeneralOptions.alwaysEnablePing = general.getOrElse("always_show_ping", false);
-    }
-
-    config.close();
-
-  }
-
-  private static BaseModule loadModule(final Config moduleConfig) {
-    final String moduleName = moduleConfig.getOrElse("name", null);
-
-    BaseModule baseModule;
-    try {
-      baseModule = BaseModule.moduleById(moduleName).getClass().getDeclaredConstructor().newInstance();
-    } catch (InstantiationException | IllegalAccessException | NullPointerException | NoSuchMethodException | InvocationTargetException e) {
-      baseModule = new EmptyModule(false);
-    }
-
-    final Config lines = moduleConfig.getOrElse("lines", () -> null);
-
-    if (lines != null) {
-      for (final Config.Entry e : lines.entrySet()) {
-        final DebugLine line = baseModule.line(e.getKey());
-
-        if (line != null) {
-          line.enabled = e.getValue();
-        }
-
-      }
-    }
-
-    if (baseModule.defaultNameColor != null) {
-      baseModule.nameColor = TextColor.fromRgb(moduleConfig.getOrElse("name_color",
-      baseModule.defaultNameColor.getValue()));
-    }
-    if (baseModule.defaultValueColor != null) {
-      baseModule.valueColor = TextColor.fromRgb(moduleConfig.getOrElse("value_color",
-      baseModule.defaultValueColor.getValue()));
-    }
-
-    if (baseModule instanceof CoordsModule coordsModule) {
-
-      if (coordsModule.defaultColorX != null)
-        coordsModule.colorX = TextColor.fromRgb(moduleConfig.getOrElse("color_x",
-        coordsModule.defaultColorX.getValue()));
-      if (coordsModule.defaultColorY != null)
-        coordsModule.colorY = TextColor.fromRgb(moduleConfig.getOrElse("color_y",
-        coordsModule.defaultColorY.getValue()));
-      if (coordsModule.defaultColorZ != null)
-        coordsModule.colorZ = TextColor.fromRgb(moduleConfig.getOrElse("color_z",
-        coordsModule.defaultColorZ.getValue()));
-    }
-
-    if (baseModule instanceof FpsModule fpsModule) {
-
-      if (fpsModule.defaultColorHigh != null)
-        fpsModule.colorHigh = TextColor.fromRgb(moduleConfig.getOrElse("color_high",
-        fpsModule.defaultColorHigh.getValue()));
-      if (fpsModule.defaultColorMed != null)
-        fpsModule.colorMed = TextColor.fromRgb(moduleConfig.getOrElse("color_med",
-        fpsModule.defaultColorMed.getValue()));
-      if (fpsModule.defaultColorLow != null)
-        fpsModule.colorLow = TextColor.fromRgb(moduleConfig.getOrElse("color_low",
-        fpsModule.defaultColorLow.getValue()));
-    }
-
-    if (baseModule instanceof EmptyModule emptyModule) {
-      emptyModule.emptyLines = moduleConfig.getOrElse("empty_lines", 1);
-    }
-
-    if (baseModule instanceof SoundModule soundModule) {
-      if (soundModule.defaultMaximumColor != null)
-        soundModule.maximumColor = TextColor.fromRgb(moduleConfig.getOrElse("maximum_color",
-        soundModule.defaultMaximumColor.getValue()));
-    }
-
-    if (baseModule instanceof EntityModule entityModule) {
-      if (entityModule.defaultTotalColor != null)
-        entityModule.totalColor = TextColor.fromRgb(moduleConfig.getOrElse("total_entities_color",
-        entityModule.defaultTotalColor.getValue()));
-    }
-
-    if (baseModule instanceof HelpModule helpModule) {
-      if (helpModule.defaultEnabledColor != null)
-        helpModule.enabledColor = TextColor.fromRgb(moduleConfig.getOrElse("enabled_color",
-        helpModule.defaultEnabledColor.getValue()));
-      if (helpModule.defaultDisabledColor != null)
-        helpModule.disabledColor = TextColor.fromRgb(moduleConfig.getOrElse("disabled_color",
-        helpModule.defaultDisabledColor.getValue()));
-    }
-
-    if (baseModule instanceof ChunksModule chunkModule) {
-      if (chunkModule.defaultEnabledColor != null)
-        chunkModule.enabledColor = TextColor.fromRgb(moduleConfig.getOrElse("chunks_enabled_color",
-        chunkModule.defaultEnabledColor.getValue()));
-      if (chunkModule.defaultDisabledColor != null)
-        chunkModule.disabledColor = TextColor.fromRgb(moduleConfig.getOrElse("chunks_disabled_color",
-        chunkModule.defaultDisabledColor.getValue()));
-      if (chunkModule.defaultTotalColor != null)
-        chunkModule.totalColor = TextColor.fromRgb(moduleConfig.getOrElse("total_chunks_color",
-        chunkModule.defaultTotalColor.getValue()));
-    }
-
-    if (baseModule instanceof SystemModule systemModule) {
-      if (systemModule.memoryColorToggle == null) {
-        systemModule.memoryColorToggle = moduleConfig.getOrElse("memory_color_toggle", systemModule.defaultMemoryColorToggle);
-      }
-      if (systemModule.timeFormat == null) {
-        systemModule.timeFormat = moduleConfig.getOrElse("time_format", systemModule.defaultTimeFormat);
-      }
-    }
-
-    baseModule.enabled = moduleConfig.getOrElse("enabled", true);
-    return baseModule;
-  }
-
-  private static Config saveModule(final BaseModule module) {
-    final Config moduleConfig = Config.inMemory();
-    final Config lines = Config.inMemory();
-
-    for (final DebugLine line : module.lines()) {
-
-      final String lineId = line.id();
-
-      lines.set(lineId, line.enabled);
-    }
-
-    moduleConfig.set("name", module.id);
-
-    if (module.nameColor != null) {
-      moduleConfig.set("name_color", module.nameColor.getValue());
-    }
-    if (module.valueColor != null) {
-      moduleConfig.set("value_color", module.valueColor.getValue());
-    }
-
-    if (module instanceof CoordsModule coordsModule) {
-      if (coordsModule.colorX != null) {
-        moduleConfig.set("color_x", coordsModule.colorX.getValue());
-      }
-      if (coordsModule.colorY != null) {
-        moduleConfig.set("color_y", coordsModule.colorY.getValue());
-      }
-      if (coordsModule.colorZ != null) {
-        moduleConfig.set("color_z", coordsModule.colorZ.getValue());
-      }
-    }
-
-    if (module instanceof FpsModule fpsModule) {
-      if (fpsModule.colorHigh != null) {
-        moduleConfig.set("color_high", fpsModule.colorHigh.getValue());
-      }
-      if (fpsModule.colorMed != null) {
-        moduleConfig.set("color_med", fpsModule.colorMed.getValue());
-      }
-      if (fpsModule.colorLow != null) {
-        moduleConfig.set("color_low", fpsModule.colorLow.getValue());
-      }
-    }
-
-    if (module instanceof EmptyModule emptyModule) {
-      moduleConfig.set("empty_lines", emptyModule.emptyLines);
-    }
-
-    if (module instanceof SoundModule soundModule) {
-      if (soundModule.maximumColor != null)
-        moduleConfig.set("maximum_color", soundModule.maximumColor.getValue());
-    }
-
-    if (module instanceof EntityModule entityModule) {
-      if (entityModule.totalColor != null)
-        moduleConfig.set("total_entities_color", entityModule.totalColor.getValue());
-    }
-
-    if (module instanceof HelpModule helpModule) {
-      if (helpModule.enabledColor != null)
-        moduleConfig.set("enabled_color", helpModule.enabledColor.getValue());
-      if (helpModule.disabledColor != null)
-        moduleConfig.set("disabled_color", helpModule.disabledColor.getValue());
-    }
-
-    if (module instanceof ChunksModule chunkModule) {
-      if (chunkModule.enabledColor != null)
-        moduleConfig.set("chunks_enabled_color", chunkModule.enabledColor.getValue());
-      if (chunkModule.disabledColor != null)
-        moduleConfig.set("chunks_disabled_color", chunkModule.disabledColor.getValue());
-      if (chunkModule.totalColor != null)
-        moduleConfig.set("total_chunks_color", chunkModule.totalColor.getValue());
-    }
-
-    moduleConfig.set("enabled", module.enabled);
-    moduleConfig.set("lines", lines);
-
-    return moduleConfig;
-  }
-
-  /**
-   * The enum File type.
-   */
-  public enum FileType {
     /**
-     * Json file type.
+     * Loads the config.
+     *
+     * @param filetype the filetype (JSON or TOML)
      */
-    JSON,
-    /**
-     * Toml file type.
-     */
-    TOML
-  }
+    public static void load(final FileType filetype) {
 
+        storedFileType = filetype;
+
+        final File file = new File(storedFileType == FileType.JSON ? "config/betterf3.json" : "config/betterf3.toml");
+
+        if (!file.exists()) {
+            return;
+        }
+
+        try (final FileConfig config =
+                FileConfig.builder(file).concurrent().autosave().build()) {
+            config.load();
+
+            final Config allModulesConfig = config.getOrElse("modules", () -> null);
+
+            // Support for old configs
+            if (allModulesConfig != null) {
+                for (final BaseModule module : BaseModule.allModules) {
+                    final Config moduleConfig = allModulesConfig.getOrElse(module.id, () -> null);
+                    if (moduleConfig != null) {
+                        module.loadConfig(moduleConfig);
+                    }
+                }
+            } else {
+                final List<BaseModule> modulesLeft = new ArrayList<>();
+                final List<BaseModule> modulesRight = new ArrayList<>();
+
+                final List<Config> modulesLeftConfig = config.getOrElse("modules_left", () -> null);
+                if (modulesLeftConfig != null) {
+                    for (final Config moduleConfig : modulesLeftConfig) {
+                        final String moduleName = moduleConfig.getOrElse("name", null);
+                        if (moduleName != null) {
+                            modulesLeft.add(ModConfigFile.loadModule(moduleConfig));
+                        }
+                    }
+                }
+
+                final List<Config> modulesRightConfig = config.getOrElse("modules_right", () -> null);
+                if (modulesRightConfig != null) {
+                    for (final Config moduleConfig : modulesRightConfig) {
+                        final String moduleName = moduleConfig.getOrElse("name", () -> null);
+                        if (moduleName != null) {
+                            modulesRight.add(ModConfigFile.loadModule(moduleConfig));
+                        }
+                    }
+                }
+
+                if (!modulesLeft.isEmpty() || !modulesRight.isEmpty()) {
+                    BaseModule.modules = modulesLeft;
+                    BaseModule.modulesRight = modulesRight;
+                }
+            }
+
+            final Config general = config.getOrElse("general", () -> null);
+            if (general != null) {
+                if (allModulesConfig != null) {
+                    final List<BaseModule> modulesLeft = new ArrayList<>();
+                    final List<BaseModule> modulesRight = new ArrayList<>();
+
+                    for (final Object s : general.getOrElse("modules_left_order", new ArrayList<>())) {
+                        final BaseModule baseModule = BaseModule.moduleById(s.toString());
+                        if (baseModule != null) {
+                            modulesLeft.add(baseModule);
+                        }
+                    }
+                    if (!modulesLeft.isEmpty()) {
+                        BaseModule.modules = modulesLeft;
+                    }
+
+                    for (final Object s : general.getOrElse("modules_right_order", new ArrayList<>())) {
+                        final BaseModule baseModule = BaseModule.moduleById(s.toString());
+                        if (baseModule != null) {
+                            modulesRight.add(baseModule);
+                        }
+                    }
+                    if (!modulesRight.isEmpty()) {
+                        BaseModule.modulesRight = modulesRight;
+                    }
+                }
+
+                GeneralOptions.disableMod = general.getOrElse("disable_mod", false);
+                GeneralOptions.autoF3 = general.getOrElse("auto_start", false);
+                GeneralOptions.spaceEveryModule = general.getOrElse("space_modules", false);
+                GeneralOptions.shadowText = general.getOrElse("shadow_text", true);
+                GeneralOptions.enableAnimations = general.getOrElse("animations", true);
+                GeneralOptions.animationSpeed = general.getOrElse("animationSpeed", 1.0);
+                GeneralOptions.fontScale = general.getOrElse("fontScale", 1.0);
+                GeneralOptions.backgroundColor = general.getOrElse("background_color", 0x6F505050);
+                GeneralOptions.hideDebugCrosshair = general.getOrElse("hide_debug_crosshair", false);
+                GeneralOptions.hideSidebar = general.getOrElse("hide_sidebar", true);
+                GeneralOptions.hideBossbar = general.getOrElse("hide_bossbar", true);
+                GeneralOptions.alwaysEnableProfiler = general.getOrElse("always_show_profiler", false);
+                GeneralOptions.alwaysEnableTPS = general.getOrElse("always_show_tps", false);
+                GeneralOptions.alwaysEnablePing = general.getOrElse("always_show_ping", false);
+                GeneralOptions.enablePerformanceOptimizations = general.getOrElse("performance_optimizations", true);
+            }
+        }
+        BaseModule.markAllDirty();
+    }
+
+    private static BaseModule loadModule(final Config moduleConfig) {
+        final String moduleName = moduleConfig.getOrElse("name", null);
+
+        BaseModule baseModule;
+        final BaseModule moduleTemplate = BaseModule.moduleById(moduleName);
+        try {
+            if (moduleTemplate != null) {
+                baseModule = moduleTemplate.getClass().getDeclaredConstructor().newInstance();
+            } else {
+                baseModule = new EmptyModule(false);
+            }
+        } catch (InstantiationException
+                | IllegalAccessException
+                | NoSuchMethodException
+                | InvocationTargetException _) {
+            baseModule = new EmptyModule(false);
+        }
+        baseModule.loadConfig(moduleConfig);
+        return baseModule;
+    }
+
+    private static Config saveModule(final BaseModule module) {
+        final Config moduleConfig = Config.inMemory();
+        module.saveConfig(moduleConfig);
+        return moduleConfig;
+    }
+
+    /**
+     * The enum File type.
+     */
+    public enum FileType {
+        /**
+         * Json file type.
+         */
+        JSON,
+        /**
+         * Toml file type.
+         */
+        TOML
+    }
 }

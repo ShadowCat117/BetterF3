@@ -12,27 +12,38 @@ import net.minecraft.network.chat.TextColor;
  */
 public class MinecraftModule extends BaseModule {
 
-  /**
-   * Instantiates a new Minecraft module.
-   */
-  public MinecraftModule() {
-    defaultNameColor = TextColor.fromRgb(0xA0522D);
-    defaultValueColor = TextColor.fromLegacyFormat(ChatFormatting.DARK_GREEN);
+    /**
+     * Instantiates a new Minecraft module.
+     */
+    public MinecraftModule() {
+        defaultNameColor = TextColor.fromRgb(0xA0522D);
+        defaultValueColor = legacyColor(ChatFormatting.DARK_GREEN);
 
-    this.nameColor = defaultNameColor;
-    this.valueColor = defaultValueColor;
+        this.nameColor = defaultNameColor;
+        this.valueColor = defaultValueColor;
 
-    lines.add(new DebugLine("minecraft", "format.betterf3.default_no_colon", false));
-    lines.getFirst().inReducedDebug = true;
-  }
+        lines.add(new DebugLine("minecraft", "format.betterf3.default_no_colon", false));
+        lines.getFirst().inReducedDebug = true;
+    }
 
-  /**
-   * Updates the Minecraft module.
-   *
-   * @param client the Minecraft client
-   */
-  public void update(final Minecraft client) {
-    lines.getFirst().value(SharedConstants.getCurrentVersion().name() + " (" + client.getLaunchedVersion() +
-      "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(client.getVersionType()) || client.options.reducedDebugInfo().get() ? "" : "/" + client.getVersionType()) + ")");
-  }
+    /**
+     * Updates the Minecraft module.
+     *
+     * @param client the Minecraft client
+     */
+    public void update(final Minecraft client) {
+        lines.getFirst()
+                .value(SharedConstants.getCurrentVersion().name() + " (" + client.getLaunchedVersion() + "/"
+                        + ClientBrandRetriever.getClientModName()
+                        + ("release".equalsIgnoreCase(client.getVersionType())
+                                        || client.options.reducedDebugInfo().get()
+                                ? ""
+                                : "/" + client.getVersionType())
+                        + ")");
+    }
+
+    @Override
+    public boolean updatesEveryFrame() {
+        return false;
+    }
 }

@@ -1,15 +1,15 @@
 pluginManagement {
     repositories {
-        maven { url "https://maven.fabricmc.net/" } // Fabric Maven Repository
-        maven { url "https://maven.architectury.dev/" } // Architectury Maven Repository
-        maven { url "https://files.minecraftforge.net/maven/" } // Minecraft Forge Maven Repository
-        maven { url "https://maven.neoforged.net/releases/" } // NeoForge Maven Repository
-        maven { url "https://jitpack.io" } // JitPack Repository
-        gradlePluginPortal() // Gradle Plugin Repository
+        maven { url = "https://maven.fabricmc.net/" }
+        maven { url = "https://maven.architectury.dev/" }
+        maven { url = "https://files.minecraftforge.net/maven/" }
+        maven { url = "https://maven.neoforged.net/releases/" }
+        maven { url = "https://jitpack.io" }
+        gradlePluginPortal()
     }
 }
 
-include("common") // Common directory
-include("fabric") // Fabric directory
-include("neoforge") // NeoForge directory
-rootProject.name = 'BetterF3' // Sets project name
+include("common")
+include("fabric")
+include("neoforge")
+rootProject.name = "BetterF3"

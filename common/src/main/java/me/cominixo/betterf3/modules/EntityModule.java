@@ -1,5 +1,6 @@
 package me.cominixo.betterf3.modules;
 
+import com.electronwill.nightconfig.core.Config;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.Arrays;
 import java.util.List;
@@ -19,83 +20,103 @@ import net.minecraft.world.level.NaturalSpawner;
  * The Entity module.
  */
 public class EntityModule extends BaseModule {
+    private static final MobCategory[] MOB_CATEGORIES = MobCategory.values();
 
-  /**
-   * Total color.
-   */
-  public TextColor totalColor;
+    /**
+     * Total color.
+     */
+    public TextColor totalColor;
 
-  /**
-   * Default total color.
-   */
-  public final TextColor defaultTotalColor = TextColor.fromLegacyFormat(ChatFormatting.GOLD);
+    /**
+     * Default total color.
+     */
+    public final TextColor defaultTotalColor = legacyColor(ChatFormatting.GOLD);
 
-  /**
-   * Instantiates a new Entity module.
-   */
-  public EntityModule() {
-    this.defaultNameColor = TextColor.fromLegacyFormat(ChatFormatting.RED);
-    this.defaultValueColor = TextColor.fromLegacyFormat(ChatFormatting.YELLOW);
+    /**
+     * Instantiates a new Entity module.
+     */
+    public EntityModule() {
+        this.defaultNameColor = legacyColor(ChatFormatting.RED);
+        this.defaultValueColor = legacyColor(ChatFormatting.YELLOW);
 
-    this.nameColor = defaultNameColor;
-    this.valueColor = defaultValueColor;
-    this.totalColor = this.defaultTotalColor;
+        this.nameColor = defaultNameColor;
+        this.valueColor = defaultValueColor;
+        this.totalColor = this.defaultTotalColor;
 
-    lines.add(new DebugLine("particles"));
-    lines.add(new DebugLine("entities", "format.betterf3.total", true));
+        lines.add(new DebugLine("particles"));
+        lines.add(new DebugLine("entities", "format.betterf3.total", true));
 
-    // Monster, Creature, Ambient, Water Creature, Water Ambient, Misc
-    for (final MobCategory spawnGroup : MobCategory.values()) {
-      final String name = spawnGroup.toString().toLowerCase();
-      lines.add(new DebugLine(name));
-    }
-
-    lines.get(0).inReducedDebug = true;
-    lines.get(1).inReducedDebug = true;
-  }
-
-  /**
-   * Updates the Entity module.
-   *
-   * @param client the Minecraft client
-   */
-  public void update(final Minecraft client) {
-
-    if (client.levelRenderer.level == null) {
-      return;
-    }
-
-    final List<Component> entityValues =
-    Arrays.asList(Utils.styledText(I18n.get("text.betterf3.line.rendered"), valueColor),
-    Utils.styledText(I18n.get("text.betterf3.line.total"), this.totalColor),
-    Utils.styledText(client.gameRenderer.getLevelRenderState().entityRenderStates.size(), valueColor),
-    Utils.styledText(client.levelRenderer.level.getEntityCount(), this.totalColor));
-
-    final IntegratedServer integratedServer = client.getSingleplayerServer();
-
-    if (client.level != null) {
-      final ServerLevel serverWorld = integratedServer != null ? integratedServer.getLevel(client.level.dimension()) : null;
-      if (serverWorld != null) {
-        final NaturalSpawner.SpawnState info = serverWorld.getChunkSource().getLastSpawnState();
-        if (info != null) {
-          final Object2IntMap<MobCategory> spawnGroupCount = info.getMobCategoryCounts();
-          // Entities (separated) (kinda bad)
-          for (int i = 0; i < MobCategory.values().length; i++) {
-            final MobCategory group = MobCategory.values()[i];
-            while (lines.size() <= i + 2) {
-              final DebugLine debugLine = new DebugLine(group.toString().toLowerCase());
-              debugLine.name(group.getName());
-              lines.add(debugLine);
-            }
-            lines.get(i + 2).value(spawnGroupCount.getInt(group));
-          }
+        // Monster, Creature, Ambient, Water Creature, Water Ambient, Misc
+        for (final MobCategory spawnGroup : MOB_CATEGORIES) {
+            final String name = spawnGroup.toString().toLowerCase();
+            lines.add(new DebugLine(name));
         }
-      }
+
+        lines.get(0).inReducedDebug = true;
+        lines.get(1).inReducedDebug = true;
     }
 
-    // Particles
-    lines.get(0).value(client.particleEngine.countParticles());
-    // Entities
-    lines.get(1).value(entityValues);
-  }
+    /**
+     * Updates the Entity module.
+     *
+     * @param client the Minecraft client
+     */
+    public void update(final Minecraft client) {
+
+        if (client.levelRenderer.level == null) {
+            return;
+        }
+
+        final List<Component> entityValues = Arrays.asList(
+                Utils.styledText(I18n.get("text.betterf3.line.rendered"), valueColor),
+                Utils.styledText(I18n.get("text.betterf3.line.total"), this.totalColor),
+                Utils.styledText(
+                        client.gameRenderer
+                                .getGameRenderState()
+                                .levelRenderState
+                                .entityRenderStates
+                                .size(),
+                        valueColor),
+                Utils.styledText(client.levelRenderer.level.getEntityCount(), this.totalColor));
+
+        final IntegratedServer integratedServer = client.getSingleplayerServer();
+
+        if (client.level != null) {
+            final ServerLevel serverWorld =
+                    integratedServer != null ? integratedServer.getLevel(client.level.dimension()) : null;
+            if (serverWorld != null) {
+                final NaturalSpawner.SpawnState info =
+                        serverWorld.getChunkSource().getLastSpawnState();
+                if (info != null) {
+                    final Object2IntMap<MobCategory> spawnGroupCount = info.getMobCategoryCounts();
+                    // Entities (separated) (kinda bad)
+                    for (int i = 0; i < MOB_CATEGORIES.length; i++) {
+                        final MobCategory group = MOB_CATEGORIES[i];
+                        while (lines.size() <= i + 2) {
+                            final DebugLine debugLine =
+                                    new DebugLine(group.toString().toLowerCase());
+                            debugLine.name(group.getName());
+                            lines.add(debugLine);
+                        }
+                        lines.get(i + 2).value(spawnGroupCount.getInt(group));
+                    }
+                }
+            }
+        }
+
+        // Particles
+        lines.get(0).value(client.particleEngine.countParticles());
+        // Entities
+        lines.get(1).value(entityValues);
+    }
+
+    @Override
+    protected void loadModuleConfig(final Config moduleConfig) {
+        this.totalColor = readColor(moduleConfig, "total_entities_color", this.defaultTotalColor);
+    }
+
+    @Override
+    protected void saveModuleConfig(final Config moduleConfig) {
+        writeColor(moduleConfig, "total_entities_color", this.totalColor);
+    }
 }
