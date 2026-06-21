@@ -65,7 +65,7 @@ public abstract class DebugOptionMixin {
         if (!GeneralOptions.disableMod
                 && GeneralOptions.autoF3
                 && this.minecraft.debugEntries.isOverlayVisible()
-                && !this.minecraft.options.hideGui) {
+                && !this.minecraft.gui.hud.isHidden()) {
             cir.setReturnValue(this.minecraft.level != null);
         }
     }

@@ -203,8 +203,9 @@ public final class DebugRenderer {
         final List<Component> list = new ArrayList<>(Math.max(16, modules.size() * 6));
 
         if (minecraft.level == null
-                || (minecraft.screen != null
-                        && !(minecraft.screen instanceof ModulesScreen || minecraft.screen instanceof ChatScreen))) {
+                || (minecraft.gui.screen() != null
+                        && !(minecraft.gui.screen() instanceof ModulesScreen
+                                || minecraft.gui.screen() instanceof ChatScreen))) {
             return list;
         }
 

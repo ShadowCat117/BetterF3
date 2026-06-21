@@ -117,11 +117,11 @@ public class ChunksModule extends BaseModule {
         if (client.levelRenderer.viewArea == null) {
             totalChunks = 0;
         } else {
-            totalChunks = client.levelRenderer.viewArea.sections.length;
+            totalChunks = client.levelRenderer.viewArea.sections.size();
         }
-        final int renderedChunks = client.levelRenderer.countRenderedSections();
+        final int renderedChunks = client.levelExtractor.countRenderedSections();
 
-        final SectionRenderDispatcher chunkBuilder = client.levelRenderer.getSectionRenderDispatcher();
+        final SectionRenderDispatcher chunkBuilder = client.levelRenderer.sectionRenderDispatcher();
 
         if (client.level == null) {
             return;

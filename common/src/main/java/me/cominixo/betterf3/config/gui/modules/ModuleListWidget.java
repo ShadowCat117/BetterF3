@@ -230,7 +230,7 @@ public class ModuleListWidget extends ObjectSelectionList<ModuleListWidget.Modul
 
             context.text(this.client.font, exampleText, x + 43, y + 13, 0xffffffff, true);
 
-            if (this.client.options.touchscreen().get() || hovered) {
+            if (hovered) {
                 context.fill(x, y, x + 32, y + 32, -1601138544);
                 final int v = mouseX - x;
                 final int w = mouseY - y;

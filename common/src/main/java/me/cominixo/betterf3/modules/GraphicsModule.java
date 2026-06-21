@@ -44,7 +44,7 @@ public class GraphicsModule extends BaseModule {
                         : I18n.get("text" + ".betterf3.line.fancy"));
 
         // Render Distance
-        lines.get(0).value(client.levelRenderer.lastViewDistance);
+        lines.get(0).value(client.levelExtractor.lastViewDistance);
         // Graphics
         lines.get(1)
                 .value(StringUtils.capitalize(

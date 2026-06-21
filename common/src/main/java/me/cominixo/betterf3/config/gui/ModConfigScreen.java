@@ -31,21 +31,21 @@ public class ModConfigScreen extends Screen {
 
         final Button leftButton = Button.builder(
                         Component.translatable("config.betterf3.order_left_button"),
-                        _ -> client.setScreen(new ModulesScreen(this, PositionEnum.LEFT)))
+                        _ -> client.gui.setScreen(new ModulesScreen(this, PositionEnum.LEFT)))
                 .bounds(this.width / 2 - 130, this.height / 4, 120, 20)
                 .build();
         this.addRenderableWidget(leftButton);
 
         final Button rightButton = Button.builder(
                         Component.translatable("config.betterf3.order_right_button"),
-                        _ -> client.setScreen(new ModulesScreen(this, PositionEnum.RIGHT)))
+                        _ -> client.gui.setScreen(new ModulesScreen(this, PositionEnum.RIGHT)))
                 .bounds(this.width / 2 + 10, this.height / 4, 120, 20)
                 .build();
         this.addRenderableWidget(rightButton);
 
         final Button configButton = Button.builder(
                         Component.translatable("config.betterf3.general_settings"),
-                        _ -> client.setScreen(
+                        _ -> client.gui.setScreen(
                                 GeneralOptionsScreen.configBuilder(client).build()))
                 .bounds(this.width / 2 - 130, this.height / 4 - 24, 260, 20)
                 .build();
@@ -53,7 +53,7 @@ public class ModConfigScreen extends Screen {
 
         final Button doneButton = Button.builder(
                         Component.translatable("config.betterf3.modules.done_button"),
-                        _ -> client.setScreen(this.parent))
+                        _ -> client.gui.setScreen(this.parent))
                 .bounds(this.width / 2 - 130, this.height - 50, 260, 20)
                 .build();
         this.addRenderableWidget(doneButton);

@@ -27,7 +27,7 @@ public final class GeneralOptionsScreen {
      * @return the config builder
      */
     public static ConfigBuilder configBuilder(final Minecraft minecraft) {
-        final Screen parent = minecraft.screen;
+        final Screen parent = minecraft.gui.screen();
 
         final ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)

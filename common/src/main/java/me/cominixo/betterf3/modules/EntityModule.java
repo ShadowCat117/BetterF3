@@ -63,7 +63,7 @@ public class EntityModule extends BaseModule {
      */
     public void update(final Minecraft client) {
 
-        if (client.levelRenderer.level == null) {
+        if (client.level == null) {
             return;
         }
 
@@ -72,12 +72,12 @@ public class EntityModule extends BaseModule {
                 Utils.styledText(I18n.get("text.betterf3.line.total"), this.totalColor),
                 Utils.styledText(
                         client.gameRenderer
-                                .getGameRenderState()
+                                .gameRenderState()
                                 .levelRenderState
                                 .entityRenderStates
                                 .size(),
                         valueColor),
-                Utils.styledText(client.levelRenderer.level.getEntityCount(), this.totalColor));
+                Utils.styledText(client.level.getEntityCount(), this.totalColor));
 
         final IntegratedServer integratedServer = client.getSingleplayerServer();
 

@@ -76,7 +76,7 @@ public final class ModulesScreen extends Screen {
                             final Screen screen = EditModulesScreen.configBuilder(
                                             Objects.requireNonNull(this.modulesListWidget.getSelected()).module, this)
                                     .build();
-                            minecraft.setScreen(screen);
+                            minecraft.gui.setScreen(screen);
                         })
                 .bounds(this.width / 2 - 50, this.height - 50, 100, 20)
                 .build();
@@ -84,7 +84,7 @@ public final class ModulesScreen extends Screen {
 
         final Button addButton = Button.builder(
                         Component.translatable("config.betterf3.modules.add_button"),
-                        _ -> minecraft.setScreen(
+                        _ -> minecraft.gui.setScreen(
                                 AddModuleScreen.configBuilder(this).build()))
                 .bounds(this.width / 2 + 4 + 50, this.height - 50, 100, 20)
                 .build();
@@ -103,7 +103,7 @@ public final class ModulesScreen extends Screen {
 
         final Button doneButton = Button.builder(Component.translatable("config.betterf3.modules.done_button"), _ -> {
                     this.onClose();
-                    minecraft.setScreen(this.parent);
+                    minecraft.gui.setScreen(this.parent);
                 })
                 .bounds(this.width / 2 - 154, this.height - 30 + 4, 308, 20)
                 .build();
@@ -133,7 +133,7 @@ public final class ModulesScreen extends Screen {
                 BaseModule.modulesRight.add(entry.module);
             }
         }
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
         ModConfigFile.saveRunnable.run();
     }
 

@@ -63,7 +63,7 @@ public class SystemModule extends BaseModule {
         lines.add(new DebugLine("display"));
         lines.add(new DebugLine("gpu"));
         lines.add(new DebugLine("gpu_utilization"));
-        lines.add(new DebugLine("opengl_version"));
+        lines.add(new DebugLine("graphics_api"));
         lines.add(new DebugLine("gpu_driver"));
 
         for (final DebugLine line : lines) {
@@ -102,11 +102,12 @@ public class SystemModule extends BaseModule {
         final String allocationRateStr = String.format("% 2d MB/s", this.allocationRate(usedMemory) / 1024 / 1024);
         final String allocatedMemory =
                 String.format("% 2d%% %03dMB", totalMemory * 100 / maxMemory, totalMemory / 1024 / 1024);
-        final String displayInfo =
-                String.format("%d x %d (%s)", window.getWidth(), window.getHeight(), gpuDevice.getVendor());
+        final String displayInfo = String.format(
+                "%d x %d (%s)",
+                window.getWidth(), window.getHeight(), gpuDevice.getDeviceInfo().vendorName());
 
-        final String openGlVersion = gpuDevice.getBackendName();
-        final String gpuDriverVersion = gpuDevice.getVersion();
+        final String graphicsApi = gpuDevice.getDeviceInfo().backendName();
+        final String gpuDriverVersion = gpuDevice.getDeviceInfo().driverInfo();
         final String gpuUtilization = gpuUtilization();
 
         lines.get(0).value(time);
@@ -120,9 +121,9 @@ public class SystemModule extends BaseModule {
         lines.get(4).value(allocatedMemory);
         lines.get(5).value(GLX._getCpuInfo());
         lines.get(6).value(displayInfo);
-        lines.get(7).value(gpuDevice.getRenderer());
+        lines.get(7).value(gpuDevice.getDeviceInfo().name());
         lines.get(8).value(gpuUtilization);
-        lines.get(9).value(openGlVersion);
+        lines.get(9).value(graphicsApi);
         lines.get(10).value(gpuDriverVersion);
     }
 

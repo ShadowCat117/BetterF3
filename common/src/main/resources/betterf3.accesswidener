@@ -1,8 +1,8 @@
 accessWidener   v1  official
 accessible class net/minecraft/client/multiplayer/ClientChunkCache$Storage
-accessible field net/minecraft/client/renderer/LevelRenderer lastViewDistance I
-accessible field net/minecraft/client/renderer/LevelRenderer level Lnet/minecraft/client/multiplayer/ClientLevel;
+accessible field net/minecraft/client/renderer/extract/LevelExtractor lastViewDistance I
 accessible field net/minecraft/client/renderer/LevelRenderer viewArea Lnet/minecraft/client/renderer/ViewArea;
+accessible field net/minecraft/client/renderer/ViewArea sections Lnet/minecraft/client/RotatingSectionStorage;
 accessible field net/minecraft/client/gui/components/debug/DebugEntryHeightmap HEIGHTMAP_NAMES Ljava/util/Map;
 accessible field net/minecraft/client/gui/components/DebugScreenOverlay renderFpsCharts Z
 accessible field net/minecraft/client/gui/components/DebugScreenOverlay renderProfilerChart Z

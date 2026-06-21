@@ -213,7 +213,6 @@
   "text.betterf3.line.display": "Ekran",
   "text.betterf3.line.gpu": "Ekran Kartı (GPU)",
   "text.betterf3.line.gpu_utilization": "Ekran Kartı Kullanımı",
-  "text.betterf3.line.opengl_version": "OpenGL Sürümü",
   "text.betterf3.line.gpu_driver": "GPU Sürücüsü",
   "text.betterf3.line.misc_left": "Çeşitli Sol",
   "text.betterf3.line.misc_right": "Çeşitli Sağ",

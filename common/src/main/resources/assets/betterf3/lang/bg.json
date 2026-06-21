@@ -213,7 +213,6 @@
   "text.betterf3.line.display": "Екран",
   "text.betterf3.line.gpu": "Видеокарта",
   "text.betterf3.line.gpu_utilization": "Използване на GPU",
-  "text.betterf3.line.opengl_version": "Версия на OpenGL",
   "text.betterf3.line.gpu_driver": "GPU драйвер",
   "text.betterf3.line.misc_left": "Misc ляво",
   "text.betterf3.line.misc_right": "Misc дясно",
