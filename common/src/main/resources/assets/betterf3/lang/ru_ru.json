@@ -213,6 +213,7 @@
   "text.betterf3.line.display": "Окно",
   "text.betterf3.line.gpu": "ГП",
   "text.betterf3.line.gpu_utilization": "Использование ГП",
+  "text.betterf3.line.opengl_version": "Версия OpenGL",
   "text.betterf3.line.gpu_driver": "Драйвер ГП",
   "text.betterf3.line.misc_left": "\"Прочее\" слева",
   "text.betterf3.line.misc_right": "\"Прочее\" справа",
